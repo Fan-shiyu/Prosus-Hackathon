@@ -16,24 +16,18 @@ export RESTBENCH_URL=http://52.48.183.209:8001
 ```
 
 Set this environment variable and all agent scripts will use it automatically.
-You can also run the server locally for development (see below).
+
+> **Interactive docs:** Visit http://52.48.183.209:8001/docs for Swagger UI where you can try every endpoint from your browser.
 
 ---
 
 ## Quick Start
 
-### 1. Start the server (local development)
+### 1. Install dependencies
 
 ```bash
-# Option A: pip install
-pip install -e .
-uvicorn restbench.api.server:app --port 8001
-
-# Option B: Docker
-docker compose up
+pip install -r requirements.txt
 ```
-
-Or skip this and use the hackathon server directly.
 
 ### 2. Create a game
 
@@ -369,8 +363,6 @@ curl $RESTBENCH_URL/scenarios
 
 ## API Reference
 
-> **Interactive docs:** Visit `$RESTBENCH_URL/docs` for auto-generated Swagger UI where you can try every endpoint from your browser.
-
 ### POST /games
 Create a new game.
 
@@ -481,13 +473,9 @@ Server health check.
 ## Running the Baselines
 
 ```bash
-# Against the hackathon server:
 export RESTBENCH_URL=http://52.48.183.209:8001
+pip install -r requirements.txt
 
-# Or start a local server:
-uvicorn restbench.api.server:app --port 8001
-
-# Run baselines:
 python -m agents.do_nothing        # Bankrupt by day ~14, score: -100,000
 python -m agents.naive_rule         # Survives 30 days
 python -m agents.starter_template   # Your starting point

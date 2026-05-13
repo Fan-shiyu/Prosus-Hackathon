@@ -1,7 +1,0 @@
-name: "baseline"
-display_name: "Baseline"
-description: "No events. The default scenario for establishing baseline scores."
-difficulty: "easy"
-hidden: false
-tuning_overrides: {}
-events: []
