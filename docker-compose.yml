@@ -1,0 +1,30 @@
+services:
+  server:
+    build: .
+    ports:
+      - "${RESTBENCH_PORT:-8001}:8001"
+    volumes:
+      - restbench_data:/app/persist
+    environment:
+      - RESTBENCH_PROJECT_DIR=/app
+      - RESTBENCH_PERSIST=true
+      - RESTBENCH_ADMIN_TOKEN=${RESTBENCH_ADMIN_TOKEN:-}
+      - RESTBENCH_MAX_CONCURRENT=${RESTBENCH_MAX_CONCURRENT:-5}
+      - RESTBENCH_MAX_GAMES_PER_HOUR=${RESTBENCH_MAX_GAMES_PER_HOUR:-60}
+      - RESTBENCH_GAME_EXPIRY=${RESTBENCH_GAME_EXPIRY:-7200}
+      - RESTBENCH_LOG_LEVEL=${RESTBENCH_LOG_LEVEL:-INFO}
+      - RESTBENCH_HIDDEN_UNLOCKED=${RESTBENCH_HIDDEN_UNLOCKED:-false}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+volumes:
+  restbench_data:

@@ -1,0 +1,34 @@
+name: "tourist_season"
+display_name: "Tourist Season"
+description: "Massive demand swings as a festival brings tourists, then leaves the neighborhood quiet. Tests dynamic staffing and inventory scaling."
+difficulty: "medium"
+hidden: false
+
+tuning_overrides:
+  demand.party_size_mean: 2.8
+
+events:
+  - type: "alert_only"
+    day: 5
+    alert: "The annual King's Day festival begins next week. Expect increased foot traffic in the neighborhood."
+
+  - type: "demand_surge"
+    day: 8
+    params:
+      multiplier: 1.6
+      duration_days: 10
+    alert: "The King's Day festival is in full swing! Tourists are flooding the neighborhood."
+
+  - type: "demand_drop"
+    day: 18
+    params:
+      multiplier: 0.5
+      duration_days: 5
+    alert: "The festival has ended. Foot traffic has dropped sharply as tourists leave."
+
+  - type: "demand_surge"
+    day: 23
+    params:
+      multiplier: 1.1
+      duration_days: 8
+    alert: "The neighborhood is slowly recovering post-festival. Some regulars are returning."

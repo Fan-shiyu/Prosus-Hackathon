@@ -1,0 +1,35 @@
+name: "renovation"
+display_name: "Renovation"
+description: "The dining room is under renovation for two weeks. Half your tables are unavailable, but the payoff is a satisfaction bonus afterward."
+difficulty: "medium"
+hidden: false
+
+tuning_overrides:
+  economics.starting_cash: 17000.0
+
+events:
+  - type: "equipment_failure"
+    day: 1
+    params:
+      reductions:
+        "4": 4
+        "6": 3
+      duration_days: 12
+    alert: "The dining room renovation begins today. Half your tables are unavailable for the next two weeks."
+
+  - type: "cash_penalty"
+    day: 7
+    params:
+      amount: 2000
+    alert: "Renovation progress payment due: EUR 2,000."
+
+  - type: "alert_only"
+    day: 13
+    alert: "Renovation complete! All tables are back in service. The dining room looks fantastic."
+
+  - type: "satisfaction_modifier"
+    day: 13
+    params:
+      bonus: 0.03
+      duration_days: 18
+    alert: "Customers are loving the renovated space! Expect higher satisfaction."

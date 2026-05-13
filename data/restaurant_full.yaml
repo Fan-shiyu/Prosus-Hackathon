@@ -1,0 +1,463 @@
+ingredients:
+  # Pantry (long shelf life)
+  - name: "Flour"
+    shelf_life_days: 14
+    par_level_kg: 20.0
+  - name: "Olive Oil"
+    shelf_life_days: 30
+    par_level_kg: 8.0
+  - name: "Rice"
+    shelf_life_days: 30
+    par_level_kg: 10.0
+  - name: "Bread"
+    shelf_life_days: 3
+    par_level_kg: 6.0
+
+  # Sauces & condiments
+  - name: "Tomato Sauce"
+    shelf_life_days: 7
+    par_level_kg: 10.0
+  - name: "Pesto"
+    shelf_life_days: 5
+    par_level_kg: 4.0
+
+  # Dairy
+  - name: "Mozzarella"
+    shelf_life_days: 5
+    par_level_kg: 8.0
+  - name: "Cream"
+    shelf_life_days: 5
+    par_level_kg: 6.0
+  - name: "Parmesan"
+    shelf_life_days: 14
+    par_level_kg: 4.0
+  - name: "Ricotta"
+    shelf_life_days: 5
+    par_level_kg: 4.0
+
+  # Pasta
+  - name: "Fresh Pasta"
+    shelf_life_days: 4
+    par_level_kg: 12.0
+
+  # Proteins
+  - name: "Chicken"
+    shelf_life_days: 5
+    par_level_kg: 8.0
+  - name: "Salmon"
+    shelf_life_days: 3
+    par_level_kg: 6.0
+  - name: "Shrimp"
+    shelf_life_days: 3
+    par_level_kg: 5.0
+  - name: "Prosciutto"
+    shelf_life_days: 10
+    par_level_kg: 4.0
+  - name: "Pepperoni"
+    shelf_life_days: 10
+    par_level_kg: 5.0
+
+  # Vegetables
+  - name: "Mushrooms"
+    shelf_life_days: 4
+    par_level_kg: 5.0
+  - name: "Lettuce"
+    shelf_life_days: 4
+    par_level_kg: 4.0
+  - name: "Spinach"
+    shelf_life_days: 3
+    par_level_kg: 4.0
+  - name: "Zucchini"
+    shelf_life_days: 5
+    par_level_kg: 4.0
+  - name: "Eggplant"
+    shelf_life_days: 5
+    par_level_kg: 4.0
+  - name: "Basil"
+    shelf_life_days: 3
+    par_level_kg: 2.0
+  - name: "Arugula"
+    shelf_life_days: 3
+    par_level_kg: 3.0
+
+  # Specialty
+  - name: "Truffle Oil"
+    shelf_life_days: 60
+    par_level_kg: 1.0
+  - name: "Anchovies"
+    shelf_life_days: 30
+    par_level_kg: 2.0
+
+recipes:
+  # === Pizza (5) ===
+  - name: "Pizza Margherita"
+    category: "Pizza"
+    base_price: 14.50
+    cook_time_minutes: 12
+    ingredients:
+      - ingredient: "Flour"
+        quantity_kg: 0.25
+      - ingredient: "Tomato Sauce"
+        quantity_kg: 0.09
+      - ingredient: "Mozzarella"
+        quantity_kg: 0.11
+
+  - name: "Pizza Pepperoni"
+    category: "Pizza"
+    base_price: 16.00
+    cook_time_minutes: 12
+    ingredients:
+      - ingredient: "Flour"
+        quantity_kg: 0.25
+      - ingredient: "Tomato Sauce"
+        quantity_kg: 0.085
+      - ingredient: "Mozzarella"
+        quantity_kg: 0.10
+      - ingredient: "Pepperoni"
+        quantity_kg: 0.07
+
+  - name: "Pizza Prosciutto"
+    category: "Pizza"
+    base_price: 17.50
+    cook_time_minutes: 12
+    ingredients:
+      - ingredient: "Flour"
+        quantity_kg: 0.25
+      - ingredient: "Tomato Sauce"
+        quantity_kg: 0.08
+      - ingredient: "Mozzarella"
+        quantity_kg: 0.10
+      - ingredient: "Prosciutto"
+        quantity_kg: 0.06
+
+  - name: "Pizza Quattro Formaggi"
+    category: "Pizza"
+    base_price: 18.00
+    cook_time_minutes: 14
+    ingredients:
+      - ingredient: "Flour"
+        quantity_kg: 0.25
+      - ingredient: "Mozzarella"
+        quantity_kg: 0.08
+      - ingredient: "Parmesan"
+        quantity_kg: 0.04
+      - ingredient: "Ricotta"
+        quantity_kg: 0.06
+
+  - name: "Pizza Marinara"
+    category: "Pizza"
+    base_price: 12.50
+    cook_time_minutes: 10
+    ingredients:
+      - ingredient: "Flour"
+        quantity_kg: 0.25
+      - ingredient: "Tomato Sauce"
+        quantity_kg: 0.12
+      - ingredient: "Basil"
+        quantity_kg: 0.01
+      - ingredient: "Olive Oil"
+        quantity_kg: 0.02
+
+  # === Pasta (5) ===
+  - name: "Mushroom Tagliatelle"
+    category: "Pasta"
+    base_price: 17.50
+    cook_time_minutes: 15
+    ingredients:
+      - ingredient: "Fresh Pasta"
+        quantity_kg: 0.18
+      - ingredient: "Cream"
+        quantity_kg: 0.12
+      - ingredient: "Mushrooms"
+        quantity_kg: 0.09
+
+  - name: "Spaghetti Carbonara"
+    category: "Pasta"
+    base_price: 16.50
+    cook_time_minutes: 14
+    ingredients:
+      - ingredient: "Fresh Pasta"
+        quantity_kg: 0.18
+      - ingredient: "Cream"
+        quantity_kg: 0.08
+      - ingredient: "Parmesan"
+        quantity_kg: 0.03
+
+  - name: "Pesto Penne"
+    category: "Pasta"
+    base_price: 15.50
+    cook_time_minutes: 12
+    ingredients:
+      - ingredient: "Fresh Pasta"
+        quantity_kg: 0.18
+      - ingredient: "Pesto"
+        quantity_kg: 0.06
+      - ingredient: "Parmesan"
+        quantity_kg: 0.02
+
+  - name: "Shrimp Linguine"
+    category: "Pasta"
+    base_price: 21.00
+    cook_time_minutes: 18
+    ingredients:
+      - ingredient: "Fresh Pasta"
+        quantity_kg: 0.18
+      - ingredient: "Shrimp"
+        quantity_kg: 0.12
+      - ingredient: "Olive Oil"
+        quantity_kg: 0.02
+      - ingredient: "Basil"
+        quantity_kg: 0.01
+
+  - name: "Truffle Risotto"
+    category: "Pasta"
+    base_price: 26.00
+    cook_time_minutes: 25
+    ingredients:
+      - ingredient: "Rice"
+        quantity_kg: 0.15
+      - ingredient: "Parmesan"
+        quantity_kg: 0.04
+      - ingredient: "Truffle Oil"
+        quantity_kg: 0.01
+      - ingredient: "Mushrooms"
+        quantity_kg: 0.08
+
+  # === Salads (3) ===
+  - name: "Chicken Caesar Salad"
+    category: "Salad"
+    base_price: 15.00
+    cook_time_minutes: 10
+    ingredients:
+      - ingredient: "Chicken"
+        quantity_kg: 0.14
+      - ingredient: "Lettuce"
+        quantity_kg: 0.12
+      - ingredient: "Parmesan"
+        quantity_kg: 0.02
+
+  - name: "Arugula Prosciutto Salad"
+    category: "Salad"
+    base_price: 16.50
+    cook_time_minutes: 8
+    ingredients:
+      - ingredient: "Arugula"
+        quantity_kg: 0.10
+      - ingredient: "Prosciutto"
+        quantity_kg: 0.05
+      - ingredient: "Parmesan"
+        quantity_kg: 0.03
+
+  - name: "Caprese Salad"
+    category: "Salad"
+    base_price: 13.50
+    cook_time_minutes: 6
+    ingredients:
+      - ingredient: "Mozzarella"
+        quantity_kg: 0.12
+      - ingredient: "Basil"
+        quantity_kg: 0.01
+      - ingredient: "Olive Oil"
+        quantity_kg: 0.02
+
+  # === Mains (5) ===
+  - name: "Grilled Salmon"
+    category: "Mains"
+    base_price: 24.00
+    cook_time_minutes: 20
+    ingredients:
+      - ingredient: "Salmon"
+        quantity_kg: 0.20
+      - ingredient: "Spinach"
+        quantity_kg: 0.06
+
+  - name: "Mushroom Risotto"
+    category: "Mains"
+    base_price: 19.00
+    cook_time_minutes: 25
+    ingredients:
+      - ingredient: "Rice"
+        quantity_kg: 0.15
+      - ingredient: "Mushrooms"
+        quantity_kg: 0.12
+      - ingredient: "Cream"
+        quantity_kg: 0.10
+
+  - name: "Chicken Parmesan"
+    category: "Mains"
+    base_price: 20.00
+    cook_time_minutes: 18
+    ingredients:
+      - ingredient: "Chicken"
+        quantity_kg: 0.18
+      - ingredient: "Tomato Sauce"
+        quantity_kg: 0.08
+      - ingredient: "Mozzarella"
+        quantity_kg: 0.06
+
+  - name: "Eggplant Parmigiana"
+    category: "Mains"
+    base_price: 17.00
+    cook_time_minutes: 22
+    ingredients:
+      - ingredient: "Eggplant"
+        quantity_kg: 0.20
+      - ingredient: "Tomato Sauce"
+        quantity_kg: 0.10
+      - ingredient: "Mozzarella"
+        quantity_kg: 0.08
+      - ingredient: "Parmesan"
+        quantity_kg: 0.02
+
+  - name: "Pan-Seared Shrimp"
+    category: "Mains"
+    base_price: 23.00
+    cook_time_minutes: 16
+    ingredients:
+      - ingredient: "Shrimp"
+        quantity_kg: 0.16
+      - ingredient: "Zucchini"
+        quantity_kg: 0.08
+      - ingredient: "Olive Oil"
+        quantity_kg: 0.02
+
+  # === Appetizers (2) ===
+  - name: "Bruschetta"
+    category: "Appetizer"
+    base_price: 10.00
+    cook_time_minutes: 8
+    ingredients:
+      - ingredient: "Bread"
+        quantity_kg: 0.10
+      - ingredient: "Tomato Sauce"
+        quantity_kg: 0.05
+      - ingredient: "Basil"
+        quantity_kg: 0.01
+      - ingredient: "Olive Oil"
+        quantity_kg: 0.01
+
+  - name: "Anchovy Crostini"
+    category: "Appetizer"
+    base_price: 11.50
+    cook_time_minutes: 8
+    ingredients:
+      - ingredient: "Bread"
+        quantity_kg: 0.10
+      - ingredient: "Anchovies"
+        quantity_kg: 0.03
+      - ingredient: "Olive Oil"
+        quantity_kg: 0.02
+
+suppliers:
+  - name: "Fresh Farms NL"
+    lead_time_days: 1
+    delivery_days: ["Monday", "Wednesday", "Friday"]
+    min_order_kg: 5.0
+    reliability: 0.92
+    ingredients:
+      - ingredient: "Tomato Sauce"
+        price_per_kg: 3.10
+      - ingredient: "Mushrooms"
+        price_per_kg: 4.20
+      - ingredient: "Lettuce"
+        price_per_kg: 2.80
+      - ingredient: "Chicken"
+        price_per_kg: 8.50
+      - ingredient: "Spinach"
+        price_per_kg: 3.50
+      - ingredient: "Zucchini"
+        price_per_kg: 2.90
+      - ingredient: "Eggplant"
+        price_per_kg: 3.20
+      - ingredient: "Basil"
+        price_per_kg: 12.00
+
+  - name: "Canal Dairy Co."
+    lead_time_days: 1
+    delivery_days: ["Tuesday", "Thursday", "Saturday"]
+    min_order_kg: 5.0
+    reliability: 0.90
+    ingredients:
+      - ingredient: "Mozzarella"
+        price_per_kg: 9.50
+      - ingredient: "Cream"
+        price_per_kg: 3.80
+      - ingredient: "Parmesan"
+        price_per_kg: 18.00
+      - ingredient: "Ricotta"
+        price_per_kg: 6.50
+
+  - name: "North Sea Millers"
+    lead_time_days: 2
+    delivery_days: ["Monday", "Wednesday", "Friday"]
+    min_order_kg: 10.0
+    reliability: 0.95
+    ingredients:
+      - ingredient: "Flour"
+        price_per_kg: 1.80
+      - ingredient: "Fresh Pasta"
+        price_per_kg: 5.50
+      - ingredient: "Rice"
+        price_per_kg: 2.20
+      - ingredient: "Bread"
+        price_per_kg: 3.00
+
+  - name: "Nordic Fish Co."
+    lead_time_days: 1
+    delivery_days: ["Monday", "Thursday"]
+    min_order_kg: 5.0
+    reliability: 0.95
+    ingredients:
+      - ingredient: "Salmon"
+        price_per_kg: 18.50
+      - ingredient: "Shrimp"
+        price_per_kg: 16.00
+      - ingredient: "Anchovies"
+        price_per_kg: 8.00
+
+  - name: "Italian Imports Co."
+    lead_time_days: 3
+    delivery_days: ["Wednesday"]
+    min_order_kg: 10.0
+    reliability: 0.80
+    ingredients:
+      - ingredient: "Flour"
+        price_per_kg: 1.50
+      - ingredient: "Fresh Pasta"
+        price_per_kg: 4.80
+      - ingredient: "Pepperoni"
+        price_per_kg: 12.00
+      - ingredient: "Tomato Sauce"
+        price_per_kg: 2.60
+      - ingredient: "Olive Oil"
+        price_per_kg: 6.00
+      - ingredient: "Pesto"
+        price_per_kg: 14.00
+
+  - name: "Mediterranean Deli"
+    lead_time_days: 2
+    delivery_days: ["Tuesday", "Friday"]
+    min_order_kg: 5.0
+    reliability: 0.88
+    ingredients:
+      - ingredient: "Prosciutto"
+        price_per_kg: 22.00
+      - ingredient: "Arugula"
+        price_per_kg: 4.50
+      - ingredient: "Olive Oil"
+        price_per_kg: 7.50
+      - ingredient: "Pesto"
+        price_per_kg: 15.00
+
+  - name: "Luxury Provisions"
+    lead_time_days: 2
+    delivery_days: ["Monday", "Thursday"]
+    min_order_kg: 5.0
+    reliability: 0.85
+    ingredients:
+      - ingredient: "Truffle Oil"
+        price_per_kg: 120.00
+      - ingredient: "Prosciutto"
+        price_per_kg: 20.00
+      - ingredient: "Parmesan"
+        price_per_kg: 16.50

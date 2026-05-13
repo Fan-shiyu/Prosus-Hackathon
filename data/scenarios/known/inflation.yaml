@@ -1,0 +1,50 @@
+name: "inflation"
+display_name: "Inflation"
+description: "Costs escalate steadily throughout the game. Ingredient prices, rent, and wages all increase. Tests pricing strategy and cost management."
+difficulty: "hard"
+hidden: false
+
+tuning_overrides: {}
+
+events:
+  - type: "price_shock"
+    day: 5
+    params:
+      ingredient: "Mozzarella"
+      multiplier: 1.3
+    alert: "Dairy prices are rising due to EU import tariffs. Mozzarella costs up 30%."
+
+  - type: "price_shock"
+    day: 10
+    params:
+      ingredient: "Salmon"
+      multiplier: 1.5
+    alert: "North Sea fishing quotas have been tightened. Salmon prices jump 50%."
+
+  - type: "cost_increase"
+    day: 15
+    params:
+      target: "fixed"
+      multiplier: 1.25
+    alert: "Your landlord has increased rent by 25%."
+
+  - type: "price_shock"
+    day: 18
+    params:
+      ingredient: "Chicken"
+      multiplier: 1.3
+    alert: "Poultry supply chain disruptions drive chicken prices up 30%."
+
+  - type: "cost_increase"
+    day: 20
+    params:
+      target: "staff"
+      multiplier: 1.2
+    alert: "New minimum wage legislation takes effect. Staff costs increase 20%."
+
+  - type: "price_shock"
+    day: 25
+    params:
+      ingredient: "Cream"
+      multiplier: 1.4
+    alert: "Dairy crisis deepens. Cream prices up 40%."

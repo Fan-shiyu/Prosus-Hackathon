@@ -1,0 +1,39 @@
+name: "supply_crisis"
+display_name: "Supply Chain Crisis"
+description: "A major supplier goes into extended outage mid-game. Tests supply chain diversification and contingency planning."
+difficulty: "medium"
+hidden: false
+
+tuning_overrides:
+  supplier_states.disruption_prob: 0.06
+
+events:
+  - type: "alert_only"
+    day: 1
+    alert: "Industry analysts warn of potential disruptions in Mediterranean shipping lanes."
+
+  - type: "supplier_outage"
+    day: 8
+    params:
+      supplier: "Italian Imports Co."
+      status: "Extended_Outage"
+    alert: "BREAKING: Italian Imports Co. has halted all operations due to a port strike. Deliveries suspended indefinitely."
+
+  - type: "tuning_override"
+    day: 8
+    params:
+      path: "supplier_states.recovery_from_outage_prob"
+      value: 0.02
+    alert: "Industry sources suggest the port strike could last weeks."
+
+  - type: "supplier_recovery"
+    day: 22
+    params:
+      supplier: "Italian Imports Co."
+      status: "Normal"
+    alert: "Italian Imports Co. has resumed operations. The port strike has ended."
+
+  - type: "tuning_restore"
+    day: 22
+    params:
+      path: "supplier_states.recovery_from_outage_prob"
