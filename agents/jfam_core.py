@@ -80,6 +80,10 @@ DEFAULT_PARAMS: dict = {
     "marketing_amount": 120.0,
     "marketing_on_weekend": True,
     "marketing_on_declining": True,
+    # Spend marketing only when yesterday's table_utilization_peak was at or
+    # below this (provable spare capacity to absorb stimulated demand). Below
+    # the 0.90 yield threshold with margin -> never markets into a full house.
+    "marketing_slack_util": 0.70,
     # Supplier reliability: avoid a supplier whose delivered/ordered ratio
     # drops below this when an alternative exists.
     "reliability_floor": 0.75,
@@ -522,15 +526,27 @@ def core_strategy(obs: dict, day: int, state: dict,
     else:
         state["hh_streak"] = 0
 
+    # Marketing. At the 1.20 ceiling (~90% margin, fixed-dominated costs) a
+    # marketing-driven cover is highly profitable — but ONLY where there is
+    # spare table capacity to seat it. Blanket daily spend backfired hard on
+    # high-demand seeds (it pushed demand past the 22-table ceiling -> walkouts
+    # -> reputation/cohort damage: seed-88 baseline/supply/renov all -5..-11k).
+    # So spend is gated to days with PROVABLE slack — low utilisation
+    # yesterday, zero walkouts, not already growing, and NOT in a surge /
+    # capacity-cut / supply-crisis regime (in a supply crisis low util means
+    # "couldn't serve — no ingredients", not spare capacity, so paying to
+    # stimulate demand we can't fulfil just burns cash). Pure observable
+    # signal, self-limiting, so it generalises: it stays dormant exactly
+    # when stimulated demand could not be profitably served. (EXP4b)
     mkt = 0.0
     if (not panic and not low_rep and regime != "reputation_shock"
+            and regime not in ("demand_surge", "capacity_cut",
+                                "supply_crisis")
             and not demand_pressure):
-        if p["marketing_on_weekend"] and dow in ("Friday", "Saturday"):
+        slack = (ss and walk_band == "None" and trend != "Growing"
+                 and util_peak <= p["marketing_slack_util"])
+        if slack or (p["marketing_on_declining"] and trend == "Declining"):
             mkt = p["marketing_amount"]
-        if p["marketing_on_declining"] and trend == "Declining":
-            mkt = max(mkt, p["marketing_amount"])
-        if regime == "demand_surge":
-            mkt = 0.0  # don't pay to amplify demand we can't serve
     actions.append({"tool": "set_marketing_spend", "args": {"amount": mkt}})
 
     # ---- Inventory ordering --------------------------------------------- #
