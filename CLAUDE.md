@@ -494,9 +494,9 @@ NOT spawn new throwaway team names; reuse ONE dev name for any tests.
 **SEED-ROBUSTNESS CONFIRMED (org Discord: "eval is on RANDOM seeds").**
 Locked agent on 4 FRESH random seeds {13,314,777,2024} × 4 known
 scenarios = 16/16 completed, **0 bankruptcies, 0 negative cells, avg
-50,685** (≥ the 45,191 6-seed validation). Cumulative proof: **10
-distinct seeds {7,55,99,42,88,123,13,314,777,2024} × 4 scen = 40 games,
-0 bankruptcies.** Per-scen ranges: baseline 45–62k, renovation 26–34k
+50,685** (≥ the 45,191 6-seed validation). Cumulative proof: **18 distinct seeds (val 7/55/99/42/88/123 +
+random 13/314/777/2024/1/31/137/271/555/808/1234/5000) × 4 scen =
+72 games, 0 bankruptcies, 0 negative cells, worst cell 20,888.** Per-scen ranges: baseline 45–62k, renovation 26–34k
 (weakest but ALWAYS strongly +; never bankrupt on any seed), supply
 47–61k, tourist 55–68k. ⇒ mechanism-justified/signal-driven design
 generalises across arbitrary seeds — the direct payoff of refusing to
