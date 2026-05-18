@@ -46,10 +46,13 @@ DEFAULT_PARAMS: dict = {
     # headroom (rep/sat ~0), so aggressive pricing dominates when demand is
     # abundant. Verified: 1.20 >> 1.08 on baseline/supply/tourist (+5–7k/cell).
     "price_mult": 1.20,
-    # ...EXCEPT under a capacity cut (renovation-like): tables are scarce so a
-    # flat-high price kills the already-limited covers — keep it moderate and
-    # let the targeted yield rule raise price only on capacity-bound days.
-    "capacity_cut_price_mult": 1.08,
+    # ...and ALSO at the ceiling under a capacity cut (renovation-like). Trace
+    # evidence: renovation is table-SUPPLY-bound (util_peak=1.0, walkouts
+    # "Many" for ~13 days) — demand vastly exceeds the halved table count, so
+    # price is inelastic in the binding regime: every scarce seat should earn
+    # the max. The old 1.08 carve-out misdiagnosed scarce SUPPLY as scarce
+    # demand and threw away margin on every served renovation cover. (EXP1a)
+    "capacity_cut_price_mult": 1.20,
     # Staffing. We were overstaffed for normal demand (idle €120/day/head);
     # base 5 is the validated sweet spot — surge/weekend bonuses still lift it
     # on high-demand days so walkouts stay ~0. (Non-monotonic: 4 understaffs.)
