@@ -1,7 +1,9 @@
 """LLM agent template — copy this and improve the prompt to build your agent.
 
-Uses LiteLLM so you can swap models easily via the AGENT_MODEL env var.
-This template sends the raw observation to the LLM with a minimal prompt.
+Uses openai SDK so you can point it at any OpenAI-compatible proxy via
+OPENAI_API_BASE env var (e.g. a LiteLLM proxy).
+
+This template sends a trimmed observation to the LLM with a minimal prompt.
 It works, but there's a LOT of room to improve:
   - Write a better system prompt with domain strategy
   - Add conversation history so the LLM remembers previous days
@@ -15,11 +17,11 @@ import json
 import os
 import sys
 
-import litellm
+import openai
 
 from agents.runner import run_game
 
-MODEL = os.getenv("AGENT_MODEL", "openai/gpt-4.1-mini")
+MODEL = os.getenv("AGENT_MODEL", "gpt-4.1-mini")
 
 SYSTEM_PROMPT = """\
 You manage an Italian restaurant for 30 simulated days. Each day you receive
@@ -44,11 +46,29 @@ Going bankrupt (cash < 0) = -100,000 score. Survival is priority #1.
 Use the exact supplier, ingredient, and dish names from the observation."""
 
 
+def _trim_observation(obs: dict) -> dict:
+    """Keep only the fields the LLM needs to make decisions."""
+    keep = {
+        "cash", "day", "staff_level", "marketing_spend",
+        "menu", "inventory", "suppliers",
+        "reputation", "yesterday",
+    }
+    return {k: v for k, v in obs.items() if k in keep}
+
+
 def strategy(observation: dict, day: int) -> list[dict]:
-    user_msg = f"Day {day}/30. Here is today's observation:\n\n{json.dumps(observation, indent=2)}"
+    api_key = os.getenv("OPENAI_API_KEY", "")
+    api_base = os.getenv("OPENAI_API_BASE") or os.getenv("OPENAI_BASE_URL")
+    client = openai.OpenAI(
+        api_key=api_key,
+        base_url=(api_base.rstrip("/") if api_base else "https://api.openai.com/v1"),
+    )
+
+    trimmed = _trim_observation(observation)
+    user_msg = f"Day {day}/30. Observation:\n\n{json.dumps(trimmed, indent=2)}"
 
     try:
-        response = litellm.completion(
+        response = client.chat.completions.create(
             model=MODEL,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
@@ -76,8 +96,8 @@ def strategy(observation: dict, day: int) -> list[dict]:
 
 
 if __name__ == "__main__":
-    if not (os.environ.get("OPENAI_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")):
-        print("Set OPENAI_API_KEY or ANTHROPIC_API_KEY first.")
+    if not os.environ.get("OPENAI_API_KEY"):
+        print("Set OPENAI_API_KEY first.")
         print(f"Using model: {MODEL} (override with AGENT_MODEL env var)")
         sys.exit(1)
     print(f"Using model: {MODEL}")
