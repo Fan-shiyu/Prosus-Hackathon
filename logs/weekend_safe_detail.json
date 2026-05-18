@@ -1,0 +1,134 @@
+[
+  {
+    "scenario": "baseline",
+    "seed": 42,
+    "score": -8022.05,
+    "zero_covers": 6,
+    "final_rep": "Fair",
+    "top_stockout": "Fresh Pasta",
+    "status": "completed",
+    "rep_pen": 636.42,
+    "walk_pen": 1638.0
+  },
+  {
+    "scenario": "baseline",
+    "seed": 88,
+    "score": -3474.79,
+    "zero_covers": 5,
+    "final_rep": "Fair",
+    "top_stockout": "Fresh Pasta",
+    "status": "completed",
+    "rep_pen": 362.19,
+    "walk_pen": 1320.0
+  },
+  {
+    "scenario": "baseline",
+    "seed": 123,
+    "score": -3479.89,
+    "zero_covers": 5,
+    "final_rep": "Fair",
+    "top_stockout": "Fresh Pasta",
+    "status": "completed",
+    "rep_pen": 526.39,
+    "walk_pen": 1531.0
+  },
+  {
+    "scenario": "supply_crisis",
+    "seed": 42,
+    "score": -9647.06,
+    "zero_covers": 4,
+    "final_rep": "Fair",
+    "top_stockout": "Fresh Pasta",
+    "status": "completed",
+    "rep_pen": 706.8,
+    "walk_pen": 1549.0
+  },
+  {
+    "scenario": "supply_crisis",
+    "seed": 88,
+    "score": -6448.02,
+    "zero_covers": 6,
+    "final_rep": "Fair",
+    "top_stockout": "Mushrooms",
+    "status": "completed",
+    "rep_pen": 803.39,
+    "walk_pen": 1626.0
+  },
+  {
+    "scenario": "supply_crisis",
+    "seed": 123,
+    "score": 1360.53,
+    "zero_covers": 4,
+    "final_rep": "Fair",
+    "top_stockout": "Fresh Pasta",
+    "status": "completed",
+    "rep_pen": 234.84,
+    "walk_pen": 1464.0
+  },
+  {
+    "scenario": "tourist_season",
+    "seed": 42,
+    "score": -4018.46,
+    "zero_covers": 5,
+    "final_rep": "Fair",
+    "top_stockout": "Fresh Pasta",
+    "status": "completed",
+    "rep_pen": 1115.09,
+    "walk_pen": 2034.0
+  },
+  {
+    "scenario": "tourist_season",
+    "seed": 88,
+    "score": 13386.15,
+    "zero_covers": 4,
+    "final_rep": "Good",
+    "top_stockout": "Mushrooms",
+    "status": "completed",
+    "rep_pen": 134.28,
+    "walk_pen": 1703.0
+  },
+  {
+    "scenario": "tourist_season",
+    "seed": 123,
+    "score": 14534.77,
+    "zero_covers": 3,
+    "final_rep": "Good",
+    "top_stockout": "Fresh Pasta",
+    "status": "completed",
+    "rep_pen": 52.84,
+    "walk_pen": 1647.0
+  },
+  {
+    "scenario": "renovation",
+    "seed": 42,
+    "score": -9686.02,
+    "zero_covers": 4,
+    "final_rep": "Fair",
+    "top_stockout": "Fresh Pasta",
+    "status": "completed",
+    "rep_pen": 921.17,
+    "walk_pen": 1545.0
+  },
+  {
+    "scenario": "renovation",
+    "seed": 88,
+    "score": -8490.7,
+    "zero_covers": 5,
+    "final_rep": "Fair",
+    "top_stockout": "Fresh Pasta",
+    "status": "completed",
+    "rep_pen": 728.73,
+    "walk_pen": 1626.0
+  },
+  {
+    "scenario": "renovation",
+    "seed": 123,
+    "score": -8561.42,
+    "zero_covers": 4,
+    "final_rep": "Fair",
+    "top_stockout": "Fresh Pasta",
+    "status": "completed",
+    "rep_pen": 767.0,
+    "walk_pen": 1602.0
+  }
+]

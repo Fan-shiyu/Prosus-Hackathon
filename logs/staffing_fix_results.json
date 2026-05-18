@@ -1,0 +1,59 @@
+{
+  "42": {
+    "score": {
+      "game_id": "05165c0c-19c5-435e-9054-4a3d950f04e7",
+      "team_name": "staffing_fix",
+      "scenario": "baseline",
+      "seed": 42,
+      "score": {
+        "net_profit": -15121.77,
+        "satisfaction_penalty": 0.0,
+        "reputation_penalty": 0.0,
+        "walkout_penalty": 1504.0,
+        "waste_penalty": 385.84,
+        "total_score": -100000.0
+      },
+      "days_survived": 21,
+      "final_cash": -121.77,
+      "status": "bankrupt"
+    }
+  },
+  "88": {
+    "score": {
+      "game_id": "2205eb07-aefe-4500-93be-4d5878b8b890",
+      "team_name": "staffing_fix",
+      "scenario": "baseline",
+      "seed": 88,
+      "score": {
+        "net_profit": -16107.89,
+        "satisfaction_penalty": 0.0,
+        "reputation_penalty": 748.76,
+        "walkout_penalty": 2354.0,
+        "waste_penalty": 117.4,
+        "total_score": -100000.0
+      },
+      "days_survived": 27,
+      "final_cash": -1107.89,
+      "status": "bankrupt"
+    }
+  },
+  "123": {
+    "score": {
+      "game_id": "c1595f45-a36e-4907-9b54-6dc8b14a7648",
+      "team_name": "staffing_fix",
+      "scenario": "baseline",
+      "seed": 123,
+      "score": {
+        "net_profit": -15190.25,
+        "satisfaction_penalty": 0.0,
+        "reputation_penalty": 0.0,
+        "walkout_penalty": 1913.0,
+        "waste_penalty": 259.69,
+        "total_score": -100000.0
+      },
+      "days_survived": 24,
+      "final_cash": -190.25,
+      "status": "bankrupt"
+    }
+  }
+}
