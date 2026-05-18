@@ -729,8 +729,9 @@ def strategy(observation: dict, day: int) -> list[dict]:
     if regime == "renovation_or_capacity" and not regime_just_changed:
         should_call_llm = False
 
-    # Rate limit: >20 calls → only on regime change or new alert
-    if llm_calls > 20:
+    # Fix B: rate-limit cap raised 20 → 28 (games were hitting the cap at day 20-23,
+    # losing LLM judgment in the final days when reputation lock-in matters most).
+    if llm_calls > 28:
         should_call_llm = should_call_llm and (regime_just_changed or new_alert)
 
     # ── Revenue-side actions: LLM or deterministic fallback ───────────────────
