@@ -439,6 +439,25 @@ autonomy story ("the system improves its own operating policy").
   ⇒ pure hidden-scenario hardening, zero regression risk. Can't test the
   hidden scenario directly but the failure mode is closed.
 
+### ✅ STRUCTURAL ALTERNATIVES TESTED & REJECTED (2026-05-18 ~12:15)
+Diagnosed via trace: we run pure "harvest mode" — reputation stuck at
+"Good", review stars flat ~3.9/5, customer_trend ALWAYS "Stable" (base
+never grows); all 8 menu_book dishes already active (variety maxed).
+Researched + tested the top research-backed structural policies (invest-
+early/harvest-late, reputation-first, service-first; deep & mild):
+- Deep invest (price 0.85-0.95 early, +staff): big LOSSES (−13k+); this
+  sim punishes discounting (consistent with non-monotonic price & net-neg
+  marketing findings).
+- Mild invest "V1" (d1-12 price 1.05, staff 8, daily HH): +5.8% on
+  baseline:7 BUT does NOT generalize — seed 55: baseline +1.9k,
+  supply +0.9k, **renovation −4.3k, tourist −7.4k, net −2,212/cell**.
+  Backfires when capacity-bound or already surging.
+⇒ No structurally-better policy found; generic restaurant/RM research
+does NOT transfer here. Current flat-aggressive + regime-conditional
+architecture is structurally correct for the robust 30-cell objective.
+Competitor lead = seed variance / cherry-picked partial matrices, NOT a
+policy we're missing. DO NOT re-explore invest-early without a new idea.
+
 ### ✅ OPTIMIZED & NOT-OVERFIT — proven (2026-05-18 ~11:45)
 - **Not overfit:** current config on dev seeds 42/88/123 (NEVER tuned on)
   = matrix avg **36,747**, 0 bankruptcies — ≈ eval seeds 7/55/99 (35,945).
