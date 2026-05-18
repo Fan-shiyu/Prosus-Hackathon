@@ -466,8 +466,15 @@ bare `has("price")`/`has("health")` in `detect_regime` can hijack a
 wrong way); fix = require co-occurring cost words. (c) *walkout_band* —
 read only from `service_summary`; add `obs.get("walkout_band")`
 fallback. (d) *premium regime ≈ no-op* (1.16 < 1.20 base) — premium_pivot
-handled by ceiling + EXP5b soft_demand hold anyway. All UNSHIPPED on
-purpose.
+handled by ceiling + EXP5b soft_demand hold anyway. (e) *inflation alert
+misroutes to supply_crisis* — `detect_regime` tests
+`has("supplier","supply",…)` BEFORE the inflation branch, so a realistic
+"Supplier prices rising due to inflation" alert never reaches `inflation`
+(crisis path then buys MORE expensive stock); regime-independent
+`cost_ratio` reserve bump still prevents bankruptcy. Sharpens (a)/(b).
+All UNSHIPPED on purpose. **Read "SESSION 2026-05-18 LATE-PM" below (full
+mechanism audit + the all-10 `jfam_scenariolab` stress lab) BEFORE
+touching any of (a)–(e) — do NOT panic-patch a merely-low hidden cell.**
 
 **Methodology / Stage-2 pitch:** wins came from an OFFLINE analyst loop —
 re-trace the CURRENT agent → mechanism-justified, signal-driven
@@ -483,6 +490,86 @@ is the autonomy story; live per-turn LLM empirically rejected (−2/−53%).
 **Leaderboard hygiene:** `JFAM_agents` is THE submission (never run a bad
 game on it). 5 worst top-clutter throwaways sunk to −100000 (#165+). Do
 NOT spawn new throwaway team names; reuse ONE dev name for any tests.
+
+**SEED-ROBUSTNESS CONFIRMED (org Discord: "eval is on RANDOM seeds").**
+Locked agent on 4 FRESH random seeds {13,314,777,2024} × 4 known
+scenarios = 16/16 completed, **0 bankruptcies, 0 negative cells, avg
+50,685** (≥ the 45,191 6-seed validation). Cumulative proof: **10
+distinct seeds {7,55,99,42,88,123,13,314,777,2024} × 4 scen = 40 games,
+0 bankruptcies.** Per-scen ranges: baseline 45–62k, renovation 26–34k
+(weakest but ALWAYS strongly +; never bankrupt on any seed), supply
+47–61k, tourist 55–68k. ⇒ mechanism-justified/signal-driven design
+generalises across arbitrary seeds — the direct payoff of refusing to
+seed-overfit (rejected blanket-EXP4 & per-cell tuning). Strong Stage-2
+point. Implication: the {7,55,99} board is just the visible matrix;
+final judging re-runs on RANDOM seeds, so seed-generalisation (not the
+banked cells) is what wins — exactly our edge. Still complete the
+visible 30-cell matrix under JFAM_agents for the top-5 cut.
+
+### ★★ SESSION 2026-05-18 LATE-PM — overfit audit + all-10 stress lab ★★
+Honest overfit review (user-requested). **Split the "NOT overfit" claim
+into two axes — they have different answers:**
+- **Seed axis (within 4 knowns): genuinely NOT overfit. Solid, settled.**
+  Held-out ≈ in-sample; ~10 global mechanism-justified scalars;
+  `jfam_params.json` DELETED (runs hand-reasoned `DEFAULT_PARAMS`); Optuna
+  never beat defaults ⇒ wide robust basin. Do not re-litigate.
+- **Scenario axis (4 known → 6 hidden = 60% of grade): partly OPEN; prior
+  §12 entries are OVER-CONFIDENT.** Every OOD defence is validated by a
+  *dormancy* gate — that proves zero regression on knowns, NOTHING about
+  whether it helps a hidden scenario. `soft_demand` / trend-driven
+  `reputation_shock`/`demand_surge` / cash-bleed `adverse` branches have
+  **never executed in a validated run** (knowns' `customer_trend` is ALWAYS
+  "Stable") — they fire first time on the graded exam.
+
+Built **`agents/jfam_scenariolab.py`** (all 10 archetypes; closes the cash
+loop + models price elasticity — the two things `jfam_oodlab` omits and
+exactly where the risk is; calibrated baseline €57,847 ≈ real €60,380).
+
+**Robust, calibration-INDEPENDENT (exact `core_strategy` output — trust):**
+1. **Survival floor HOLDS.** 0 bankruptcies across all 10 even with
+   adversarial elasticity + closed-loop cash. *It will NOT blow up — this
+   is the load-bearing reassurance; a merely-LOW hidden cell is the
+   accepted cost of the lock, NOT a reason to patch.*
+2. **Risk A — `soft_demand` holds 1.20 into a demand decline BY DESIGN**
+   ([jfam_core.py:529-532](agents/jfam_core.py#L529-L532)); no price-down
+   path for elastic decline with healthy reputation (premium_pivot,
+   silent_drift, famine legs). Deliberate EXP5b choice, justified by
+   inelasticity measured ONLY on knowns; backfires OOD *iff* a hidden
+   regime is elastic.
+3. **Risk B — silent erosion is invisible AND the safe-mode can't catch
+   it.** silent_drift → `regime="normal"` all 30 days (exact). Cash-bleed
+   safe-mode trigger is `cash < reserve ≈ 3×overhead ≈ €2,700` —
+   structurally *near-bankruptcy* ⇒ NEVER fires in any non-bankruptcy
+   scenario ⇒ ZERO score protection vs a slow bleed. **⚠️ EXP5b OVER-CLAIM
+   CORRECTED:** the EXP5b entry calls cash-bleed safe-mode drift hardening;
+   it is purely anti-bankruptcy. (EXP5b soft_demand hold is real, but it is
+   a *hold*, not a recovery.)
+4. **NEW EXACT BUG (= deferred item (e))** — inflation alert misroutes to
+   `supply_crisis` ([jfam_core.py:356-361](agents/jfam_core.py#L356-L361));
+   `cost_ratio` ([jfam_core.py:464-468](agents/jfam_core.py#L464-L468)) is
+   regime-independent so still no bankruptcy.
+
+**Illustrative ONLY (NOT score predictions):** baseline/supply 100% ·
+tourist 113% · renovation 78% · feast_or_famine 75% · inflation 62% ·
+premium_pivot 57% · health_scare 53% · silent_drift 46% · black_swan 28%
+of baseline end-cash. ⚠️ The adverse elasticities (1.0–1.2) are an
+**adversarial hypothesis with zero evidence**; EXP1b (4 diverse scenarios)
+is a strong prior that this sim is price-INELASTIC — if it holds, the
+agent is materially fine on hidden too. Read the % as "worst-case IF the
+inelasticity prior breaks", not a forecast.
+
+**Decision: LOCK held (consistent with the HANDOFF block above).** No live
+patch: LATEST-per-cell ⇒ regression is permanent + 12 known cells banked
+byte-identical; every fix is an untested branch on the exam validated only
+by the model that proposed it (circular); patching = overfitting to my own
+synthetic adversary vs the stronger empirical inelasticity prior; no time
+for a live multi-seed gate; complete matrix > partial. The lab is a
+**Stage-2 asset** (autonomy/technical-quality/judgment). Post-16:00
+stance: run the 30-cell matrix once with the locked agent; **observe-and-
+document**, do not reactively tune. The scenariolab + findings 2–4 say
+exactly where to look IF a hidden cell is catastrophic — but the
+byte-identical-known gate (and ideally a held-out check) still gates any
+change, and realistically there is no time.
 
 ### ★★ SESSION 2026-05-18 PM — "exhausted" REFUTED, +24% banked ★★
 The prior "search EXHAUSTED / competitor lead = variance / lock & hold"
@@ -543,6 +630,35 @@ gate is authoritative. Because EXP5b == locked on knowns, the 12 official
 known cells already banked under JFAM_agents (44,810) stay valid.
 TODO next: lock holds at 08dfba3; at 16:00 run the 18 hidden cells
 (6 hidden × seeds 7,55,99) under JFAM_agents to complete the 30-cell matrix.
+
+### Cross-session addendum (CMA-ES + diagnostic session, 2026-05-18 PM)
+Additive context; does NOT override 08dfba3 / LATEST-per-cell below.
+- **Optimizer upgrade:** CMA-ES seeded at the current params (small σ₀≈0.10,
+  `optuna.samplers.CmaEsSampler(x0=current, sigma0=0.10)`) is materially
+  stronger than Optuna-TPE/random on this rugged, cliff-prone surface — it
+  found a leaner-inventory baseline gain (forecast_safety 1.20→1.15,
+  max_hold 10→9, coverage_buffer 3.0→2.5) that TPE, random search, AND
+  per-cell overfit search all MISSED (baseline +1.6k–3.5k across all 3
+  seeds; supply_crisis:7 +3.0k). `cmaes` pip pkg installed. For any further
+  offline tuning use CMA-ES-local, not default TPE. **CAVEATS:** (1) that
+  candidate was measured vs the PRE-08dfba3 agent ⇒ STALE — re-validate ANY
+  candidate against the CURRENT committed agent on held-out seeds; (2) it
+  REGRESSED tourist −4,245 (leaner inventory underserves surges → less
+  robust on volatile/hidden scenarios); (3) LATEST-per-cell ⇒ NEVER deploy
+  a per-cell param variant under `JFAM_agents` (overwrites good cells).
+- **Table capacity is STAFF-INDEPENDENT.** On surge days util→1.00 /
+  walkout "Many" / kitchen fine; adding staff was tested 3 independent ways
+  (static `staff_base` sweep, `regime_surge_staff_bonus` param, forecast-
+  driven staffing controller) → ALL worse / zero extra covers. Staffing
+  logic unchanged in 08dfba3, so this still holds. Do NOT spend the
+  hidden-scenario phase on surge-staffing — the 22-table limit is hard.
+- **Diagnostic op-note:** instrument from `rr['observation']
+  ['service_summary']` (obs returned by `end-turn` = yesterday's REAL
+  results: table_utilization_peak / peak_wait_minutes /
+  kitchen_bottleneck_hours / dishes_unavailable_at / hourly_covers). It is
+  `null` on day 1 (pre-service). `day_result` has ONLY total_covers /
+  total_revenue / walkout_band / dishes_sold / substitutions — reading the
+  rich fields off it silently returns 0/[] (the bug corrected below).
 
 ### ⚠️ SCORING MECHANIC CORRECTED — LATEST-per-cell, NOT best-per-cell
 README/§6.4/§10 say "best score per (scenario,seed) cell counts". This is
