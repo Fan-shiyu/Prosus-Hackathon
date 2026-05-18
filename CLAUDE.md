@@ -439,6 +439,18 @@ autonomy story ("the system improves its own operating policy").
   ⇒ pure hidden-scenario hardening, zero regression risk. Can't test the
   hidden scenario directly but the failure mode is closed.
 
+### 📈 Eval matrix progress (12/30 cells, seeds 7/55/99) — UPDATE EACH RERUN
+28,111 (orig) → 32,486 (pricing) → **35,945 (staff_base=5)**. +28%, 0
+bankruptcies. Standing among genuine ≥12-cell teams: estain 39,892 →
+**JFAM_agents 35,945** → MargheritAI 35,429. Our worst cell 14,273 = best
+consistency in top 3. Levers captured: price_mult 1.20, staff_base 5,
+persistent capacity-cut. Marketing = ruled out (net-negative). Not overfit
+(3 global structural scalars, mechanism-justified, generalise all seeds).
+Diminishing returns now — remaining levers (menu/special/happy-hour/waste)
+are small; the 30-cell final is decided by the 6 HIDDEN scenarios (unlock
+~16:00). Recommendation: lock & hold for hidden unlock; don't grind
+diminishing single-cell sweeps (quota + overfit risk).
+
 ### ✖️ "CEILING" CLAIM RETRACTED — big pricing headroom found (2026-05-18 ~11:30)
 The assessment below was WRONG. Rival MargheritAI (complete 12-cell
 submission, avg ~35.4k) and others score 46–49k on the *same deterministic*
