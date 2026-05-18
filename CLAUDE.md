@@ -439,6 +439,22 @@ autonomy story ("the system improves its own operating policy").
   ⇒ pure hidden-scenario hardening, zero regression risk. Can't test the
   hidden scenario directly but the failure mode is closed.
 
+### ✅ OVERFIT CEILING MEASURED — ~zero headroom (2026-05-18 ~12:50)
+Research Q: would deliberate per-cell overfitting raise the score? The
+matrix is fixed + deterministic + best-per-cell, so per-cell tuning IS the
+Stage-1 ceiling (mechanically allowed; no hold-out beyond the 30 cells).
+Measured: jfam_tune with NO held-out gate (pure single-cell objective) on
+baseline:7 → trial0 (current DEFAULT_PARAMS) = 38,529 = BEST; every
+perturbation worse; "no improvement." Consistent w/ 10-trial joint opt.
+⇒ ~ZERO per-cell overfit headroom: current params already at the per-cell
+optimum even without the generalization constraint. Overfitting would NOT
+raise our score; not the reason rivals score higher. Only higher ceiling =
+literal record-replay of optimal action sequences per cell (huge search,
+impossible for 18 hidden until ~16:00, −100k-fragile to any seed change,
+Stage-2 autonomy = 0). Not worth it. Detail: memory
+restbench-overfit-research. Overfit params kept OUT of the real agent
+(jfam_params.json deleted; agent stays on committed DEFAULT_PARAMS).
+
 ### ✅ DEEP OUTPUT ANALYSIS — sim mechanics decoded (2026-05-18 ~12:35)
 Instrumented tourist_season:7 (rich service fields). Findings:
 - **NO capacity/kitchen/inventory constraint EVER** — peak_wait=0,
