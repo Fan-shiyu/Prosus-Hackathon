@@ -92,6 +92,10 @@ DEFAULT_PARAMS: dict = {
     # generalises to ANY capacity/surge regime (renovation, tourist, unseen).
     "yield_price_mult": 1.18,
     "yield_util_threshold": 0.90,   # table_utilization_peak
+    # Endgame: skip orders arriving later than (last_day - this). 0 = skip only
+    # orders that physically cannot arrive before the game ends (zero stockout
+    # risk; the order-sizing end-cap handles right-sizing the rest). (EXP2)
+    "endgame_order_horizon": 0,
     "price_hysteresis": 0.02,       # don't re-price for tiny mult changes
     # Inflation / cost-shock defence (targets the hidden `inflation` scenario;
     # signal-driven off observed supplier prices so it generalises and stays
@@ -562,6 +566,12 @@ def core_strategy(obs: dict, day: int, state: dict,
     cov_base = state.get("cov_ewma") or p["base_covers"]
     cadence_extra = int(round(p["safety_days"] + p["coverage_buffer_days"]
                               + extra_safety))
+    # Endgame: the sim ends on `last_day`; inventory arriving after it (or
+    # sized for service days that don't exist) is pure sunk cash + waste with
+    # zero revenue upside. Trace showed ~280 kg ordered on day 30 alone, all
+    # delivered after the game. Self-gating (only ever binds near the end), so
+    # no early-game effect and no scenario-name sniffing. (EXP2)
+    last_day = day + int(obs.get("days_remaining", max(0, 30 - day)))
 
     orders: list[tuple[float, dict]] = []
     for ing in sorted(needed_ings):
@@ -594,11 +604,17 @@ def core_strategy(obs: dict, day: int, state: dict,
         scored.sort(key=lambda x: (x[0], x[1]))
         _, arr, chosen = scored[0]
 
+        # Won't be delivered before the game ends -> 100% waste, skip it.
+        if arr > last_day - p["endgame_order_horizon"]:
+            continue
+
         have = stock.get(ing, 0.0)
         pend_days = [(dd, q) for dd, i, q in pend if i == ing]
-        # Bridge to the next feasible delivery after this one, plus safety.
-        end = arr + int(round(delivery_gap_days(day, chosen["ddays"]))) \
-            + cadence_extra
+        # Bridge to the next feasible delivery after this one, plus safety —
+        # but never size for service days beyond the game's end.
+        end = min(last_day,
+                  arr + int(round(delivery_gap_days(day, chosen["ddays"])))
+                  + cadence_extra)
         need = required_order(intensity, covers_fc, have, pend_days,
                               day, arr, end)
         if need <= 1e-6:
