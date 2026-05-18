@@ -70,6 +70,19 @@ The live agent therefore runs **zero LLM tokens** by default. It is fast,
 free, fully reproducible, and — because the sim is deterministic — every tuning
 experiment is a free, exact measurement.
 
+> **"Can't you run rules *and* an LLM and keep the best?"** We built exactly
+> that and tested it ([`jfam_hybrid.py`](agents/jfam_hybrid.py)): the rule core
+> is a hard floor; a strong LLM is consulted **only** in regimes the rules were
+> never validated on (a confidence-gated deferral — the ReDAct pattern), then
+> hard-vetoed back into legal, solvent bounds. It is **provably byte-identical
+> to the locked agent on every known scenario** (it cannot regress what we
+> already win), and an offline A/B ([`jfam_hybridlab.py`](agents/jfam_hybridlab.py),
+> zero server cost) shows the LLM path *still* does not beat the tuned rules
+> even on the hidden archetypes. The choice can't be made on the server
+> (scoring is latest-per-cell; hidden scenarios get one try), so it has to be
+> this single-agent per-turn arbitration — and the honest result reconfirms the
+> rules-only bet.
+
 ### The three layers
 
 ```
@@ -171,6 +184,8 @@ unmodified hackathon starter kit; we reuse `runner.py` and `evaluate.py` as-is.
 | [agents/jfam_loglens.py](agents/jfam_loglens.py) | **Tracer + stockout diagnostic.** Plays one game, writes the full (obs, actions, result) trace to `traces/`, prints a day-by-day "which ingredient stranded which day" table. The input to the offline-analyst loop. | `python -m agents.jfam_loglens [scenario] [seed]` |
 | [agents/jfam_oodlab.py](agents/jfam_oodlab.py) | **Offline OOD harness.** Server-free. Mutates a real trace into adverse hidden-scenario shapes; asserts the safety nets are **dormant on healthy** and **active on adverse**. | `python -m agents.jfam_oodlab` |
 | [agents/jfam_scenariolab.py](agents/jfam_scenariolab.py) | **All-10-scenario synthetic lab.** Server-free. Closed-loop cash + price-elasticity model over all 10 archetypes (incl. the 6 hidden) to ask "does the locked policy generalise / bleed / go bankrupt". | `python -m agents.jfam_scenariolab [name] [--full]` |
+| [agents/jfam_hybrid.py](agents/jfam_hybrid.py) | **Rules+LLM hybrid (experimental).** Rule core as a hard floor; an LLM is consulted *only* in regimes the rules were never validated on (confidence-gated deferral), then hard-vetoed to legal/solvent bounds. Proven byte-identical to the locked agent on all 4 knowns ⇒ zero regression risk. Not the shipped submission — kept as the principled "use both safely" artifact. | `python -m agents.jfam_hybrid [scenario] [seed]` |
+| [agents/jfam_hybridlab.py](agents/jfam_hybridlab.py) | **Offline hybrid A/B.** Drives the hybrid through the synthetic lab vs the locked rules, real LLM, zero server quota. Finding: the LLM path does not beat the tuned rules even on hidden archetypes — empirical backing for shipping rules-only. | `python -m agents.jfam_hybridlab` |
 
 ### How a game actually runs
 
