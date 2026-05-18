@@ -359,6 +359,19 @@ tune the rule core for free.
   `jfam_params.json`. Rate-limit aware (`trials × scenarios × seeds < 60/hr`).
 - `jfam_loglens.py` — traced run + stockout diagnostic → `traces/*.jsonl` for
   offline Claude-Code analysis (no API key needed).
+- `jfam_oodlab.py` — synthetic adverse-drift harness (mutates
+  `traces/baseline_7.jsonl`); validates EXP5b dormancy on knowns / efficacy
+  on hand-crafted mutants. Server-free, zero-token.
+- `jfam_scenariolab.py` — **all-10-scenario** offline stress lab (built
+  2026-05-18 LATE-PM). Runs the real `core_strategy` through synthetic
+  streams for every known + hidden archetype; unlike `jfam_oodlab` it
+  **closes the cash loop** (the agent's own price/staff/marketing feed
+  `cash_t`) and models **price elasticity** (covers respond to the chosen
+  price). Baseline-relative verdict, calibrated to the real trace (baseline
+  ≈ €57,847 vs real €60,380). Shows what the LOCKED agent *does* on a
+  regime before that regime is testable on the server. **Caveat:** the
+  adverse-scenario elasticities (1.0–1.2) are an *adversarial hypothesis*,
+  not measured — see §12 SESSION 2026-05-18 LATE-PM.
 
 **Config:** `.env` (git-ignored) / `.env.example`. Keys: `RESTBENCH_URL`,
 `LITELLM_BASE_URL`, `LITELLM_API_KEY`, `AGENT_MODEL`, `JFAM_LLM_OFF` (default
@@ -368,7 +381,9 @@ key scoped to LLM routes only) — self-meter via `traces/llm_usage.jsonl`.
 **CURRENT results (2026-05-18 ~14:00, EXP1a+EXP2+EXP4b, zero LLM, 24-game
 matrix [4 known × seeds 7,55,99,42,88,123], 0 bankruptcies):** aggregate
 **45,191** (was 36,346 pre-session → **+24%**). Eval seeds {7,55,99} +24.7%;
-**held-out seeds {42,88,123} +24.0%** (≈ in-sample ⇒ proven NOT overfit). Per
+**held-out seeds {42,88,123} +24.0%** (≈ in-sample ⇒ proven NOT overfit *on
+the seed axis*; the scenario axis — 4 known → 6 hidden, 60% of the grade —
+is a separate, partly-open question, see §12 SESSION 2026-05-18 LATE-PM). Per
 scenario: baseline ~48k · renovation ~25k · supply_crisis ~48k · tourist
 ~60k. Dominates every full-12-cell rival on the dashboard (estain 39.9k,
 agent_3 39.8k, MargheritAI 35.4k). The three kept levers (see §12 SESSION
@@ -390,6 +405,9 @@ python -m agents.jfam_loglens renovation 42
 python -m agents.jfam_tune --trials 20 --scenarios baseline,renovation --seeds 42 --parallel 3
 # matrix (eval phase): omit --scenarios to fetch all 10
 RESTBENCH_URL=… python -m agents.evaluate agents.jfam_agent --seeds 7,55,99 --team-name JFAM_agents --parallel 5
+# offline: what does the LOCKED agent DO on every hidden archetype? (zero-token)
+python -m agents.jfam_scenariolab                 # all 10, baseline-relative summary
+python -m agents.jfam_scenariolab silent_drift --full   # one, day-by-day trajectory
 ```
 
 **Plan file:** `/Users/jasp/.claude/plans/i-want-you-to-hashed-meadow.md`.
@@ -400,6 +418,71 @@ RESTBENCH_URL=… python -m agents.evaluate agents.jfam_agent --seeds 7,55,99 --
 
 Append findings here so future sessions don't repeat dead ends. Format:
 `[date] finding — evidence — decision`.
+
+### ★★★ NEXT-SESSION HANDOFF (read this FIRST) — 2026-05-18 ~16:00 ★★★
+
+**State:** agent LOCKED at git `08dfba3` on branch `Jasper` (pushed to
+`origin/Jasper`; HEAD incl. docs later). = EXP1a+EXP2+EXP4b+EXP5b, pure
+rules, `JFAM_LLM_OFF=1`. 24-game known validation **45,191**, 0
+bankruptcies, +24% vs session start; held-out {42,88,123} +24.0% ≈
+in-sample {7,55,99} +24.7% ⇒ NOT overfit. **Search is genuinely done for
+the knowns — do NOT re-tune** (every lever tested; see logs below).
+`.env` (real LiteLLM key) is git-ignored & NOT in history (verified);
+`.env.example` has only a placeholder.
+
+**THE one remaining action — official 18 hidden cells.** 12 known cells
+already banked under `JFAM_agents` (=44,810, #5). When `/scenarios`
+returns >4 (hidden unlock ~16:00) run the full matrix (omit
+`--scenarios` so it pulls all 10; deterministic ⇒ re-running the 12
+known cells reproduces identical scores, harmless):
+```bash
+RESTBENCH_URL=http://52.48.183.209:8001 JFAM_LLM_OFF=1 \
+ python3 -m agents.evaluate agents.jfam_agent \
+ --seeds 7,55,99 --team-name JFAM_agents --parallel 5
+```
+Contingency: `days=0 / -100000 / status=error` = a 429 rate-limit, NOT a
+real bankruptcy — re-run that cell sequentially with the SAME locked
+agent (deterministic ⇒ reproduces the true score). NEVER run a
+degraded/no-op/variant agent under `JFAM_agents` (scoring is
+LATEST-per-cell, not best — a bad run overwrites a good cell). Genuine
+hidden-scenario bankruptcies (real −100000, days=30) = intel only; do
+NOT change code after submission / 17:00.
+
+**Submission checklist (NOT complete):** (1) `JFAM_agents` matrix —
+12/30 done, finish 18 hidden after unlock. (2) Repo
+`Fan-shiyu/Prosus-Hackathon` is **PRIVATE — MUST be made public** before
+submission (owner/admin; safe — no secrets in history). (3) Fill the
+submission form incl. a short "what we'd build next". (4) Last commit
+< 17:00; branch `Jasper` already pushed.
+
+**Candidate hardenings CONSIDERED but DEFERRED** (4 expert subagents;
+revisit ONLY if a hidden scenario visibly fails AND the fix is provably
+dormant on the 24 known cells — lock discipline; user: generalisation >
+peak): (a) *cost0 day≤2 lock* — an `inflation` ramp starting day 1-2
+defeats the 1.10 trigger so the inflation defence never fires; fix =
+widen warmup ~day5 + price-velocity trigger. (b) *keyword brittleness* —
+bare `has("price")`/`has("health")` in `detect_regime` can hijack a
+`black_swan`/`premium_pivot` alert into the wrong branch (price pushed
+wrong way); fix = require co-occurring cost words. (c) *walkout_band* —
+read only from `service_summary`; add `obs.get("walkout_band")`
+fallback. (d) *premium regime ≈ no-op* (1.16 < 1.20 base) — premium_pivot
+handled by ceiling + EXP5b soft_demand hold anyway. All UNSHIPPED on
+purpose.
+
+**Methodology / Stage-2 pitch:** wins came from an OFFLINE analyst loop —
+re-trace the CURRENT agent → mechanism-justified, signal-driven
+hypothesis → 24-game DETERMINISTIC gate (byte-identical dormancy proof +
+held-out seeds anti-overfit) → keep only what generalises. It
+self-corrected (caught a revenue-EWMA tourist regression and a
+stale-trace "exhausted" myth). `agents/jfam_oodlab.py` = server-free
+synthetic adversarial harness (mutates real obs → silent_drift / famine /
+black_swan / premium streams) used to validate EXP5b OOD generalisation
+offline. "The system improves & stress-tests its own operating policy"
+is the autonomy story; live per-turn LLM empirically rejected (−2/−53%).
+
+**Leaderboard hygiene:** `JFAM_agents` is THE submission (never run a bad
+game on it). 5 worst top-clutter throwaways sunk to −100000 (#165+). Do
+NOT spawn new throwaway team names; reuse ONE dev name for any tests.
 
 ### ★★ SESSION 2026-05-18 PM — "exhausted" REFUTED, +24% banked ★★
 The prior "search EXHAUSTED / competitor lead = variance / lock & hold"
