@@ -28,6 +28,7 @@ DOW_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
 DEFAULT_RELIABILITY = 0.85
 CRITICAL_BUFFER = 1.5   # extra multiplier for ingredients used by 3+ dishes
 CASH_RESERVE = 1500     # never spend below this
+_SURGE_DISHES = frozenset({"Grilled Salmon", "Mushroom Risotto", "Spaghetti Carbonara"})
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -650,6 +651,19 @@ def strategy(observation: dict, day: int) -> list[dict]:
     state = _load_state(observation)
     state = _update_state(state, observation)
 
+    # Track customer trend for consecutive-decline detection (Change 6)
+    _cov_h = state.get("cov", [])
+    if len(_cov_h) >= 6:
+        _r_avg = sum(_cov_h[-3:]) / 3
+        _p_avg = sum(_cov_h[-6:-3]) / 3
+        _ratio = (_r_avg - _p_avg) / _p_avg if _p_avg > 0 else 0
+        _trend = "falling" if _ratio < -0.1 else ("rising" if _ratio > 0.1 else "stable")
+    else:
+        _trend = "stable"
+    state.setdefault("ct", [])
+    state["ct"].append(_trend)
+    state["ct"] = state["ct"][-2:]
+
     # Panic mode: cash < 2000, skip LLM, pure deterministic
     if observation.get("cash", 0) < 2000:
         actions.extend(_panic_actions(observation))
@@ -705,6 +719,17 @@ def strategy(observation: dict, day: int) -> list[dict]:
     actions.extend(_plan_orders(observation, state, ranked, already_ordered, regime))
     actions.extend(_plan_staff(observation, regime))
 
+    # Hard renovation override: staff=4 (plan_staff cap of 4 is blocked by min-5 bug)
+    # Only when alert-confirmed physical renovation — not demand-driven low-cover
+    _renov_alerts_early = [str(a).lower() for a in (observation.get("alerts") or [])]
+    _is_physical_renov_early = any(
+        "renovat" in a or "capacity" in a or "closed" in a for a in _renov_alerts_early
+    )
+    if regime == "renovation_or_capacity" and _is_physical_renov_early:
+        actions = [a for a in actions if a.get("tool") != "set_staff_level"]
+        if observation.get("staff_level", 5) != 4:
+            actions.append({"tool": "set_staff_level", "args": {"level": 4}})
+
     # ── LLM call decision ─────────────────────────────────────────────────────
 
     ss = observation.get("service_summary") or {}
@@ -725,7 +750,7 @@ def strategy(observation: dict, day: int) -> list[dict]:
         or days_since_llm >= 3
     )
 
-    # Skip if steady-state renovation (deterministic narrow menu is correct)
+    # Skip LLM in steady-state renovation (deterministic overrides handle it; daily_special picked below)
     if regime == "renovation_or_capacity" and not regime_just_changed:
         should_call_llm = False
 
@@ -791,6 +816,78 @@ def strategy(observation: dict, day: int) -> list[dict]:
         actions.extend(_plan_menu(observation, regime))
         actions.extend(_plan_marketing(observation, state, regime))
         if dow in ("Monday", "Tuesday", "Wednesday"):
+            actions.append({"tool": "run_happy_hour", "args": {}})
+
+    # ── Change 2: Hard renovation overrides (menu=top5, marketing=0) ──────────
+    # Only fire on alert-confirmed physical renovation, not demand-driven low-cover slumps
+    _renov_alerts = [str(a).lower() for a in (observation.get("alerts") or [])]
+    _is_physical_renov = any(
+        "renovat" in a or "capacity" in a or "closed" in a for a in _renov_alerts
+    )
+    if regime == "renovation_or_capacity" and _is_physical_renov:
+        # Servable top-5: filter by actual stock before picking
+        _renov_usable = _usable_stock(observation)
+        _renov_menu_map = {d["name"]: d for d in observation.get("menu_book", [])}
+        _renov_candidates = [
+            d for d in _top_margin_dishes(observation, 10)
+            if _dish_is_servable(_renov_menu_map.get(d, {}), _renov_usable)
+        ]
+        if len(_renov_candidates) < 5:
+            _renov_candidates = _top_margin_dishes(observation, 5)  # fallback
+        top5 = _renov_candidates[:5]
+        actions = [a for a in actions if a.get("tool") != "set_menu"]
+        if set(top5) != set(observation.get("active_menu", [])):
+            actions.append({"tool": "set_menu", "args": {"dishes": top5}})
+        actions = [a for a in actions if a.get("tool") != "set_marketing_spend"]
+        actions.append({"tool": "set_marketing_spend", "args": {"amount": 0}})
+        # Pick best servable dish as daily_special deterministically in renovation
+        if not any(a.get("tool") == "offer_daily_special" for a in actions) and top5:
+            actions.append({"tool": "offer_daily_special", "args": {"dish": top5[0]}})
+
+    # ── Change 4: Auto daily_special on Mon/Tue/Wed if not already set ────────
+    if dow in ("Monday", "Tuesday", "Wednesday"):
+        if not any(a.get("tool") == "offer_daily_special" for a in actions):
+            if llm_dec and not llm_dec.use_deterministic_fallback and llm_dec.active_menu:
+                _menu_for_special = llm_dec.active_menu
+            elif regime == "renovation_or_capacity":
+                _menu_for_special = _top_margin_dishes(observation, 5)
+            else:
+                _menu_for_special = list(observation.get("active_menu", []))
+            _mmap = {d["name"]: d for d in observation.get("menu_book", [])}
+            if _menu_for_special:
+                _best = max(_menu_for_special,
+                            key=lambda d: _mmap.get(d, {}).get("base_price", 0))
+                actions.append({"tool": "offer_daily_special", "args": {"dish": _best}})
+
+    # ── Change 5: Tourist surge pricing floor (≥1.10x for key dishes) ─────────
+    if (regime == "tourist_surge"
+            and observation.get("reputation_band") in ("Good", "Very Good", "Excellent")):
+        _base_prices = {d["name"]: d.get("base_price", 0) for d in observation.get("menu_book", [])}
+        if llm_dec and not llm_dec.use_deterministic_fallback:
+            _active_now = set(llm_dec.active_menu or [])
+            _llm_pc = llm_dec.price_changes or {}
+        else:
+            _active_now = set(observation.get("active_menu", []))
+            _llm_pc = {}
+        for _dish in _SURGE_DISHES:
+            if _dish in _active_now and _base_prices.get(_dish, 0) > 0:
+                if _llm_pc.get(_dish, 1.0) < 1.10:
+                    actions.append({"tool": "set_price", "args": {
+                        "dish": _dish, "price": round(_base_prices[_dish] * 1.10, 2),
+                    }})
+
+    # ── Change 6: Two consecutive falling days → recovery booster ─────────────
+    if (regime != "renovation_or_capacity"
+            and len(state.get("ct", [])) >= 2
+            and state["ct"][-2] == "falling"
+            and state["ct"][-1] == "falling"):
+        _existing_mkt = (llm_dec.marketing_spend or 0) if (
+            llm_dec and not llm_dec.use_deterministic_fallback) else 0
+        actions = [a for a in actions if a.get("tool") != "set_marketing_spend"]
+        actions.append({"tool": "set_marketing_spend", "args": {
+            "amount": max(_existing_mkt, 200),
+        }})
+        if not any(a.get("tool") == "run_happy_hour" for a in actions):
             actions.append({"tool": "run_happy_hour", "args": {}})
 
     # Persist state

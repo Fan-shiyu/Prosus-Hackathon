@@ -17,7 +17,34 @@ from dataclasses import dataclass
 
 import openai
 
-MODEL = os.getenv("AGENT_MODEL", "gpt-4.1-mini")
+MODEL = os.getenv("AGENT_MODEL", "")  # empty = auto-probe at first call
+_MODEL_RESOLVED: str | None = None
+CANDIDATE_MODELS = ["openai/gpt-5", "openai/gpt-5-mini", "openai/gpt-4o", "gpt-4.1-mini"]
+
+
+def _resolve_model() -> str:
+    global _MODEL_RESOLVED
+    if _MODEL_RESOLVED:
+        return _MODEL_RESOLVED
+    if MODEL:
+        _MODEL_RESOLVED = MODEL
+        return _MODEL_RESOLVED
+    client = _make_client(timeout=4.0)
+    for candidate in CANDIDATE_MODELS:
+        try:
+            client.chat.completions.create(
+                model=candidate,
+                messages=[{"role": "user", "content": "hi"}],
+                max_tokens=1,
+            )
+            _MODEL_RESOLVED = candidate
+            print(f"[llm_manager] using model: {candidate}")
+            return candidate
+        except Exception:
+            continue
+    _MODEL_RESOLVED = "gpt-4.1-mini"
+    return _MODEL_RESOLVED
+
 
 SYSTEM_PROMPT = """\
 You are the revenue manager for an Italian restaurant simulation. A separate \
@@ -83,6 +110,33 @@ Return JSON only (no markdown):
 }}
 
 Set override to null if no correction is needed."""
+
+_REGIME_HINTS: dict[str, str] = {
+    "supplier_crisis": (
+        "Strategy: Switch to most reliable suppliers fast. Protect reputation by starting "
+        "with a small menu (5 dishes) and growing it back as supply stabilizes. Don't try "
+        "to grow revenue during crisis — defend reputation."
+    ),
+    "tourist_surge": (
+        "Strategy: Short-term exploitation. During the 3-day surge window, raise prices on "
+        "high-margin dishes (Grilled Salmon, Mushroom Risotto, Spaghetti Carbonara) up to "
+        "1.15-1.2x. Offer the highest-margin dish as daily special. Rebalance to base "
+        "prices when surge ends."
+    ),
+    "renovation_or_capacity": (
+        "Strategy: Capacity-constrained. Do NOT spend on marketing — extra customers become "
+        "walkouts. Smaller menu is fine. Focus on serving the customers you can serve well."
+    ),
+    "demand_collapse": (
+        "Strategy: Recovery mode. Cut high-margin prices by 0.05-0.10 to encourage return "
+        "visits. Run happy hour. Marketing spend 200 EUR. Offer daily special to drive "
+        "satisfaction."
+    ),
+    "normal": (
+        "Strategy: Steady operations. Raise prices on high-margin dishes by 0.05-0.10 when "
+        "reputation is Good or better. Marketing only on slow weekdays (Mon-Wed)."
+    ),
+}
 
 ALLOWED_OVERRIDE_FIELDS = frozenset({
     "marketing_floor",
@@ -338,12 +392,16 @@ def daily_decisions(observation: dict, deterministic_context: dict,
     client = _make_client(timeout=5.0)
     user_msg = json.dumps(deterministic_context, separators=(",", ":"))
 
+    regime = deterministic_context.get("regime", "normal")
+    hint = _REGIME_HINTS.get(regime, "")
+    system_content = SYSTEM_PROMPT + ("\n\n" + hint if hint else "")
+
     for attempt in range(2):
         try:
             resp = client.chat.completions.create(
-                model=MODEL,
+                model=_resolve_model(),
                 messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "system", "content": system_content},
                     {"role": "user", "content": user_msg},
                 ],
                 temperature=0.2,
