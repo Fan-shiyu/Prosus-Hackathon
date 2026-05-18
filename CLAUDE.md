@@ -430,6 +430,29 @@ autonomy story ("the system improves its own operating policy").
   score (jfam_jasper baseline/42 == JFAM_agents baseline/42 == 31,491.72).
   ⇒ the free zero-token tuning loop is reliable.
 
+- **Inflation/cost-shock defence (2026-05-18):** detector recognised
+  `inflation` but core had NO response (margin-bleed → bankruptcy risk on
+  the hidden scenario). Added: avg cheapest-ingredient cost vs early
+  baseline; if ≥+10% OR inflation alert ⇒ pass cost through to menu price
+  (within legal band) + enlarge cash reserve. Verified **dormant on stable
+  knowns** (baseline/supply_crisis/tourist scores byte-identical pre/post)
+  ⇒ pure hidden-scenario hardening, zero regression risk. Can't test the
+  hidden scenario directly but the failure mode is closed.
+
+### ⚖️ Ceiling assessment (2026-05-18 — read before more micro-tuning)
+Known scenarios are at/near practical ceiling: reputation penalty ~0,
+waste ~200, walkout <450, 30/30 days, all beat dev leader AKT. Covers are
+demand-capped (we serve ~all customers). Further squeezing of knowns =
+diminishing returns AND dev-seed overfit risk (user explicitly warned).
+Hidden-regime coverage now: health_scare→reputation_shock recovery;
+black_swan→supply_crisis safety; feast_or_famine→demand_surge/soft;
+silent_drift→soft_demand; premium_pivot→premium pricing; inflation→handled
+(above). Highest remaining EV is NOT more known-scenario tuning — it is the
+full-quota, held-out-gated `jfam_tune` multi-seed pass AT the hackathon,
+and live adaptation to the actual hidden scenarios once unlocked. Only
+marginal known-scenario item left: recurring thin `Salmon`/`Pepperoni`
+(walkout already ~100, ≤1% upside).
+
 ### What does NOT work ❌ (do not retry without a new idea)
 - **L3 LLM layer (`gpt-4.1-mini`, bounded knob nudges, weekly cadence)** —
   baseline/42 30,847 vs pure-rules 31,492 (−2%); renovation/42 **3,871 vs

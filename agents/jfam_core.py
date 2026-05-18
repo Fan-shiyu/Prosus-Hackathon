@@ -80,6 +80,12 @@ DEFAULT_PARAMS: dict = {
     "yield_price_mult": 1.18,
     "yield_util_threshold": 0.90,   # table_utilization_peak
     "price_hysteresis": 0.02,       # don't re-price for tiny mult changes
+    # Inflation / cost-shock defence (targets the hidden `inflation` scenario;
+    # signal-driven off observed supplier prices so it generalises and stays
+    # dormant when costs are stable -> no regression on known scenarios).
+    "inflation_cost_trigger": 1.10,  # avg ingredient cost vs early baseline
+    "inflation_price_mult": 1.18,    # defend margin within the legal band
+    "inflation_reserve_days": 5.0,   # bigger cash buffer vs a cost squeeze
     # Regime adjustments.
     "regime_surge_staff_bonus": 3,
     "regime_quiet_staff_penalty": 2,
@@ -207,6 +213,25 @@ def update_reliability(state: dict, obs: dict) -> None:
         acc = rel.setdefault(n, [0.0, 0.0])
         acc[0] += float(h.get("delivered_kg", 0) or 0)
         acc[1] += float(h.get("ordered_kg", 0) or 0)
+
+
+def cost_ratio(obs: dict, state: dict) -> float:
+    """Current avg cheapest-per-ingredient price vs an early baseline.
+    >1 means supplier costs have inflated. Pure observable signal."""
+    prices: dict[str, float] = {}
+    for s in obs.get("supplier_catalog", []):
+        for ing, pr in s.get("ingredients", {}).items():
+            pr = float(pr)
+            if ing not in prices or pr < prices[ing]:
+                prices[ing] = pr
+    if not prices:
+        return 1.0
+    avg = sum(prices.values()) / len(prices)
+    base = state.get("cost0")
+    if base is None or obs.get("day", 1) <= 2:
+        # Lock the baseline in the first couple of (pre-shock) days.
+        state["cost0"] = base = avg if base is None else min(base, avg)
+    return avg / base if base else 1.0
 
 
 # --------------------------------------------------------------------------- #
@@ -383,6 +408,13 @@ def core_strategy(obs: dict, day: int, state: dict,
                        or util_peak >= p["yield_util_threshold"])
     recovering = (regime in ("reputation_shock", "soft_demand") or low_rep)
 
+    # Inflation / cost-shock defence (hardens the hidden `inflation` scenario).
+    cr = cost_ratio(obs, state)
+    inflating = (regime == "inflation"
+                 or cr >= p["inflation_cost_trigger"])
+    if inflating:
+        reserve = max(reserve, p["inflation_reserve_days"] * overhead)
+
     # ---- Staffing -------------------------------------------------------- #
     staff = p["staff_base"]
     if dow in ("Friday", "Saturday", "Sunday"):
@@ -413,6 +445,9 @@ def core_strategy(obs: dict, day: int, state: dict,
     # losing net customers. Never when recovering reputation.
     if demand_pressure and not recovering:
         price_mult = max(price_mult, p["yield_price_mult"])
+    # Pass rising input costs through to menu prices (unless recovering rep).
+    if inflating and not recovering:
+        price_mult = max(price_mult, p["inflation_price_mult"])
     prev = state.get("price_mult_used")
     changed = prev is None or abs(price_mult - prev) > p["price_hysteresis"]
     if not state.get("priced") or changed:
