@@ -461,6 +461,22 @@ known cells already banked under JFAM_agents (44,810) stay valid.
 TODO next: lock holds at 08dfba3; at 16:00 run the 18 hidden cells
 (6 hidden × seeds 7,55,99) under JFAM_agents to complete the 30-cell matrix.
 
+### ⚠️ SCORING MECHANIC CORRECTED — LATEST-per-cell, NOT best-per-cell
+README/§6.4/§10 say "best score per (scenario,seed) cell counts". This is
+**empirically FALSE** (verified 2026-05-18 ~14:49): a leaderboard-cleanup
+run submitted no-op bankruptcies on throwaway team `jfam_lab6`, whose
+`supply_crisis/7` cell held +46,650; after the bankruptcy that cell read
+−100,000 and the team avg = −100,000 over 12 cells. A WORSE re-run
+**overwrote** a better score ⇒ the server keeps the **LATEST** score per
+cell, not the best. Implications: (a) retrying a completed cell does NOT
+"keep the best" — it replaces it; (b) our agent is deterministic so an
+identical re-run reproduces the same score (safe), but (c) NEVER run a
+degraded/no-op/variant agent under `JFAM_agents` — it would overwrite a
+good cell. At 16:00 run each hidden cell once with the locked good agent
+(08dfba3); only re-run a cell that ERRORED / returned a transient 429
+(surfaced as days=0 / −100000-not-a-real-bankruptcy), and only with the
+locked agent. The old "retry weak cells, best counts" guidance is WRONG.
+
 ### ★ STRATEGIC PIVOT (2026-05-18) — where AI is actually useful here
 Research consensus (AIM-Bench, AgentBench, HeuriGym, TRAIL + our own A/B
 with gpt-4.1-mini AND gpt-5.4-mini): LLMs making **live per-turn decisions**
