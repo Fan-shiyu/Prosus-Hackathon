@@ -453,6 +453,18 @@ and live adaptation to the actual hidden scenarios once unlocked. Only
 marginal known-scenario item left: recurring thin `Salmon`/`Pepperoni`
 (walkout already ~100, ≤1% upside).
 
+### ✅ OVERFIT TEST PASSED — eval seeds 7/55/99 (2026-05-18 ~10:50)
+Ran 12 playable cells under JFAM_agents on UNSEEN eval seeds. 12/12
+completed, **0 bankruptcies, 0 collapses, rep penalty 0 everywhere**.
+Eval-seed avgs ≈ dev-seed avgs ⇒ **empirically NOT overfit**:
+baseline 30,247 · supply_crisis 30,017 · tourist 40,656 · renovation
+11,523. Matrix avg **28,111 (12/30)**. Dashboard rank 3 BUT #1/#2
+(HackGiraffe 45.9k, AKT 28.4k) have only 1/4 cherry-picked cells; among
+teams with 12 cells we lead massively (next best elite_hybrid 6.3k,
+test_agent −2.7k). Final metric = full 30-cell avg ⇒ our consistency +
+completeness wins. Weakest cell: renovation/55 = 7,995 (still +, retry
+candidate later). Remaining: 18 hidden cells unlock ~16:00.
+
 ### What does NOT work ❌ (do not retry without a new idea)
 - **L3 LLM layer (`gpt-4.1-mini`, bounded knob nudges, weekly cadence)** —
   baseline/42 30,847 vs pure-rules 31,492 (−2%); renovation/42 **3,871 vs
