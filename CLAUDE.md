@@ -439,6 +439,30 @@ autonomy story ("the system improves its own operating policy").
   ⇒ pure hidden-scenario hardening, zero regression risk. Can't test the
   hidden scenario directly but the failure mode is closed.
 
+### ✅ DEEP OUTPUT ANALYSIS — sim mechanics decoded (2026-05-18 ~12:35)
+Instrumented tourist_season:7 (rich service fields). Findings:
+- **NO capacity/kitchen/inventory constraint EVER** — peak_wait=0,
+  table_utilization=0, kitchen_bottleneck=[], substitutions=0, nothing
+  unavailable, even on 310-cover surge days. Binding constraint = pure
+  DEMAND + revenue/cover. (So staffing/inventory perfection ≠ more score.)
+- **All 8 dishes ~87-96% gross margin** (ingredient cost €1-4 trivial).
+  Revenue ≈ dish price × covers; costs negligible.
+- Menu-engineering test (drop cheap dishes): **profit/cover COLLAPSED
+  7.0→3.8**, score 38.5k→22-27k. Sim heavily rewards a FULL diverse menu
+  (shrinking-menu demand/satisfaction hit is real & severe). Top seller is
+  the CHEAPEST dish (Pizza Margherita) yet full menu is most profitable.
+- Promo ablation: both-on=38.5k ≈ both-off=38.1k, but ONE-only = 28-31k
+  (strong interaction). Current modest promo = balanced optimum; any
+  perturbation ≤ current.
+⇒ Every lever now empirically tested: price, per-dish price, staff,
+marketing, inventory params (joint opt), invest-early, menu composition,
+promo on/off — ALL net-negative, non-generalizing, or within noise.
+Current architecture is the robust optimum for THIS sim (which inverts
+generic restaurant wisdom: punishes discounting & menu restriction,
+rewards full menu + ceiling price + lean staff + balanced promos +
+strong forecasting). Competitor lead = variance/cherry-picking, NOT a
+missing lever. Search space EXHAUSTED — stop offline tuning.
+
 ### ✅ STRUCTURAL ALTERNATIVES TESTED & REJECTED (2026-05-18 ~12:15)
 Diagnosed via trace: we run pure "harvest mode" — reputation stuck at
 "Good", review stars flat ~3.9/5, customer_trend ALWAYS "Stable" (base
