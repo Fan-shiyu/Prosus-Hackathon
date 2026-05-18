@@ -96,6 +96,12 @@ DEFAULT_PARAMS: dict = {
     # generalises to ANY capacity/surge regime (renovation, tourist, unseen).
     "yield_price_mult": 1.18,
     "yield_util_threshold": 0.90,   # table_utilization_peak
+    # Cash-bleed safe-mode (anti-bankruptcy OOD net). Fires only on the
+    # unambiguous solvency precursor — cash strictly declining this many days
+    # AND already under the reserve floor — so it cannot confuse an expected
+    # scenario demand lull (e.g. tourist post-festival) with a real shock.
+    # Genuinely dormant on all knowns (cash grows monotonically there). (EXP5b)
+    "ood_cash_decline_days": 3,
     # Endgame: skip orders arriving later than (last_day - this). 0 = skip only
     # orders that physically cannot arrive before the game ends (zero stockout
     # risk; the order-sizing end-cap handles right-sizing the rest). (EXP2)
@@ -461,6 +467,33 @@ def core_strategy(obs: dict, day: int, state: dict,
     if inflating:
         reserve = max(reserve, p["inflation_reserve_days"] * overhead)
 
+    # ---- Cash-bleed safe-mode (anti-bankruptcy OOD net) ------------------ #
+    # A REVENUE-drop trigger was tried and rejected: it false-fired on the
+    # tourist_season post-festival lull (an EXPECTED scenario decline, not
+    # adverse drift) and regressed all 6 tourist cells -4k each. A pure
+    # revenue/covers signal cannot separate an expected demand lull from a
+    # genuine adverse regime. So the safe-mode keys ONLY off the unambiguous
+    # bankruptcy precursor: cash strictly declining for N days AND already
+    # below the reserve floor (STRATEGY_GUIDE explicitly sanctions acting on
+    # 3 straight cash-decline days). This is genuinely dormant on ALL knowns
+    # (cash grows monotonically there — tourist is cash-RICH post-festival),
+    # and fires only when a black_swan / inflation cliff actually threatens
+    # solvency. Defuses the -100k catastrophe; pure observable signal. (EXP5b)
+    ch = (state.get("cash_hist", []) + [cash])[
+        -(p["ood_cash_decline_days"] + 1):]
+    state["cash_hist"] = ch
+    adverse = (regime in ("normal", "soft_demand") and not low_rep
+               and not inflating and not demand_pressure
+               and len(ch) > p["ood_cash_decline_days"]
+               and all(ch[i] > ch[i + 1] for i in range(len(ch) - 1))
+               and cash < reserve)
+    if adverse:
+        # Solvency threatened by an unrecognised shock: enlarge the cash
+        # buffer, hold the ceiling price (price-inelastic ⇒ cutting only
+        # bleeds margin), and stop the marketing spend. All validated-safe
+        # directions; reuses the inflation reserve param (no new knob).
+        reserve = max(reserve, p["inflation_reserve_days"] * overhead)
+
     # ---- Staffing -------------------------------------------------------- #
     staff = p["staff_base"]
     if dow in ("Friday", "Saturday", "Sunday"):
@@ -482,8 +515,21 @@ def core_strategy(obs: dict, day: int, state: dict,
 
     # ---- Pricing --------------------------------------------------------- #
     price_mult = p["price_mult"]
-    if recovering:
+    # The 0.95 recovery cut is justified ONLY for genuine reputation rebuild
+    # (reputation_shock / low_rep): accessible price + service wins trust back.
+    # It is the WRONG lever for exogenous demand softness (soft_demand =
+    # trend Declining but reputation fine — famine leg, premium-pivot churn,
+    # late silent_drift): demand here is price-INELASTIC (EXP1b: price-down
+    # = -7-8k), so cutting only forfeits ~21% margin. Hold the ceiling there.
+    # Dormant on the 4 knowns: their customer_trend is ALWAYS "Stable" ⇒
+    # soft_demand never fires ⇒ byte-identical (proven by the dormancy gate).
+    rep_recovery = (regime == "reputation_shock") or low_rep
+    if rep_recovery and not adverse:
         price_mult = p["regime_recovery_price_mult"]
+    elif adverse or regime == "soft_demand":
+        # Unrecognised / exogenous adverse drift on price-INELASTIC demand:
+        # cutting price only forfeits margin. Hold ceiling.
+        price_mult = p["price_mult"]
     elif regime == "capacity_cut":
         # Scarce tables: don't choke demand with a flat-high price; the yield
         # rule below still lifts price on genuinely capacity-bound days.
@@ -539,7 +585,8 @@ def core_strategy(obs: dict, day: int, state: dict,
     # signal, self-limiting, so it generalises: it stays dormant exactly
     # when stimulated demand could not be profitably served. (EXP4b)
     mkt = 0.0
-    if (not panic and not low_rep and regime != "reputation_shock"
+    if (not panic and not low_rep and not adverse
+            and regime != "reputation_shock"
             and regime not in ("demand_surge", "capacity_cut",
                                 "supply_crisis")
             and not demand_pressure):
