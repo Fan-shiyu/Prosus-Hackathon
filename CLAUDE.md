@@ -365,11 +365,15 @@ tune the rule core for free.
 `1` = pure-rules), `TEAM_NAME=JFAM_agents`. **Proxy budget is opaque** (virtual
 key scoped to LLM routes only) — self-meter via `traces/llm_usage.jsonl`.
 
-**Pure-rules results (untuned, zero LLM, all 30-day completions, 0 bankruptcies):**
-baseline 42/88/123 → +31.5k / +33.8k / +23.5k (avg ~29.6k); supply_crisis 88 →
-+36.1k; renovation 42 → +8.3k (weak spot — tune target); tourist_season 42 →
-**+46.6k**. Already at/above the dev-phase leader **AKT** (avg ~28.4k; their
-renovation was −281). Beats naive_rule (−15.8k) and starter (−19.5k).
+**CURRENT results (2026-05-18 ~14:00, EXP1a+EXP2+EXP4b, zero LLM, 24-game
+matrix [4 known × seeds 7,55,99,42,88,123], 0 bankruptcies):** aggregate
+**45,191** (was 36,346 pre-session → **+24%**). Eval seeds {7,55,99} +24.7%;
+**held-out seeds {42,88,123} +24.0%** (≈ in-sample ⇒ proven NOT overfit). Per
+scenario: baseline ~48k · renovation ~25k · supply_crisis ~48k · tourist
+~60k. Dominates every full-12-cell rival on the dashboard (estain 39.9k,
+agent_3 39.8k, MargheritAI 35.4k). The three kept levers (see §12 SESSION
+2026-05-18 PM) are mechanism-justified & signal-driven ⇒ generalise to the
+hidden six. LLM stays OFF (live control measured −2%/−53%; ship rules-only).
 
 **Confirmed eval intel (from `/leaderboard/dashboard`):** 10 eval scenarios =
 4 known + hidden `black_swan, feast_or_famine, health_scare, inflation,
@@ -396,6 +400,44 @@ RESTBENCH_URL=… python -m agents.evaluate agents.jfam_agent --seeds 7,55,99 --
 
 Append findings here so future sessions don't repeat dead ends. Format:
 `[date] finding — evidence — decision`.
+
+### ★★ SESSION 2026-05-18 PM — "exhausted" REFUTED, +24% banked ★★
+The prior "search EXHAUSTED / competitor lead = variance / lock & hold"
+conclusion was **WRONG**, built on STALE traces: `traces/*_42.jsonl`
+(09:52–10:31) end `"staff":7,"price_mult_used":1.08` — the *old* agent.
+Current params (price 1.20 / staff 5, commits 9fcd69b/3a28d57) were never
+re-traced. Fresh dashboard: rivals with COMPLETE 12-cell matrices beat us
+(estain 39.9k vs JFAM 35.9k); estain 56,644 on the *deterministic* cell
+baseline/7 vs our ~38k ⇒ a real recoverable gap, not noise.
+
+Offline-analyst loop (re-trace current agent → mechanism-justified rule →
+24-game held-out gate) banked **three** wins; **36,346 → 45,191 (+24%)**,
+0 bankruptcies. Held-out seeds {42,88,123} +24.0% ≈ eval {7,55,99} +24.7%
+⇒ **empirically NOT overfit**. KEPT (committed):
+- **EXP1a** (21aa9cb) `capacity_cut_price_mult` 1.08→1.20. Renovation is
+  table-SUPPLY-bound (util_peak=1.0, walkouts "Many" ~13d) — price is
+  inelastic in the binding regime; the 1.08 carve-out misdiagnosed scarce
+  SUPPLY as scarce demand. Dormant outside capacity_cut. +562 agg.
+- **EXP2** (1242b6e) endgame order discipline. Agent sized orders against
+  an OPEN-ENDED horizon and dumped ~280 kg on day 30 (delivered after the
+  game) — ~€8k/game sunk cash+waste. Cap order horizon at `last_day`
+  (=day+days_remaining); skip orders with arrival > last_day. Scenario-
+  AGNOSTIC accounting ⇒ generalises to all 10. +3,664/cell.
+- **EXP4b** (56bf8a2) capacity-gated marketing. "Marketing net-negative"
+  was a STALE-1.08 artifact; at the 1.20 ceiling a marketing cover is
+  highly profitable *iff* a free table exists. Spend only on PROVABLE
+  slack (yest. util≤0.70, 0 walkouts, trend≠Growing, NOT in surge/
+  capacity/supply regime). Self-limiting ⇒ fails safe. +4,619/cell.
+REJECTED (do not retry without a new idea): **EXP1b** price-down on slack
+days (−7-8k/game ⇒ demand is price-INELASTIC, 1.20 confirmed optimal —
+this VINDICATES the old price prior, kills any low-price/EXP5 idea);
+**EXP4 blanket marketing** (+4.6k/cell agg BUT 3 seed-88 cells −5..−11k:
+over-stimulates high-demand seeds past the 22-table ceiling — must gate on
+capacity, see EXP4b); **EXP3** rotate daily special (3/4 cells byte-
+identical ⇒ special-choice has ~0 effect; ≤1% prior confirmed).
+LLM decision (user, this session): **ship rules-only**, live LLM stays OFF
+(measured −2%/−53%); the offline-analyst loop IS the AI/autonomy story.
+TODO next: lock holds; at 16:00 run official 30-cell under JFAM_agents.
 
 ### ★ STRATEGIC PIVOT (2026-05-18) — where AI is actually useful here
 Research consensus (AIM-Bench, AgentBench, HeuriGym, TRAIL + our own A/B
