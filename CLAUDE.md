@@ -397,7 +397,29 @@ RESTBENCH_URL=… python -m agents.evaluate agents.jfam_agent --seeds 7,55,99 --
 Append findings here so future sessions don't repeat dead ends. Format:
 `[date] finding — evidence — decision`.
 
+### ★ STRATEGIC PIVOT (2026-05-18) — where AI is actually useful here
+Research consensus (AIM-Bench, AgentBench, HeuriGym, TRAIL + our own A/B
+with gpt-4.1-mini AND gpt-5.4-mini): LLMs making **live per-turn decisions**
+on a deterministic, well-tuned-baseline sim **systematically lose**. Do not
+keep trying to fix live-L3 by swapping models — proven dead end.
+**AI's winning role = OFFLINE policy optimizer/analyst** (NVIDIA Eureka beat
+human experts 83%; DeepMind FunSearch/AlphaEvolve; OPRO; GEPA; Karpathy
+auto-research). Loop: LLM reads failure traces → proposes generalizable
+rule/PARAM changes → deterministic multi-seed replay → keep only if it beats
+baseline → held-out seed validation (anti-overfit). This uses abundant
+Claude Code, not the scarce game-LLM budget, and is a *stronger* Stage-2
+autonomy story ("the system improves its own operating policy").
+
 ### What works ✅
+- **Yield-management rule (2026-05-18, offline-analyst win):** when
+  walkouts present OR `table_utilization_peak ≥ 0.90` (capacity-bound,
+  customers walking on tables not price) and reputation healthy → raise
+  price toward the legal ceiling + suppress demand-stimulating promos.
+  Pure observable signal, no scenario-sniffing. Result: renovation/42
+  8,301→10,360 (+25%), renovation/88 →14,999, baseline/42 31,492→32,783
+  (+4%), tourist/42 46,618→46,066 (−1.2%, minor). Net strongly positive,
+  generalises across seeds & scenarios. This validated the offline-analyst
+  loop above — keep using it.
 - **Forward demand forecasting** (day-of-week cover profile drives front-loaded
   ordering) — turned −15.8k → +31.5k on baseline/42; eliminated the recurring
   Sunday 0-cover stockouts. This is the single biggest win. Keep.

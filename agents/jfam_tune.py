@@ -75,7 +75,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--trials", type=int, default=20)
     ap.add_argument("--scenarios", default="baseline,renovation")
-    ap.add_argument("--seeds", default="42")
+    ap.add_argument("--seeds", default="42",
+                    help="TRAIN seeds the search optimises on")
+    ap.add_argument("--val-seeds", default="",
+                    help="HELD-OUT seeds; a tune is adopted only if it also "
+                         "beats baseline here (anti-overfit). Empty = skip.")
     ap.add_argument("--parallel", type=int, default=3)
     ap.add_argument("--url", default=os.getenv("RESTBENCH_URL",
                                                "http://localhost:8001"))
@@ -118,17 +122,35 @@ def main():
     print(f"\nBaseline (current params) mean: {baseline_val:,.0f}")
     print(f"Best found mean:               {study.best_value:,.0f}")
 
-    if study.best_value > baseline_val + 1.0:
-        best = dict(DEFAULT_PARAMS)
-        best.update(base_best)
-        best.update(study.best_params)
-        best_path.write_text(json.dumps(best, indent=2))
-        print(f"IMPROVED by {study.best_value - baseline_val:,.0f} "
-              f"-> wrote {best_path}")
-        print(json.dumps(study.best_params, indent=2))
-    else:
-        print("No improvement over current params — jfam_params.json "
+    if study.best_value <= baseline_val + 1.0:
+        print("No TRAIN improvement over current params — jfam_params.json "
               "left unchanged (defaults retained).")
+        return
+
+    best = dict(DEFAULT_PARAMS)
+    best.update(base_best)
+    best.update(study.best_params)
+
+    # Anti-overfit gate: a TRAIN win must also hold on HELD-OUT seeds the
+    # search never saw, else we reject it (real eval is unseen seeds).
+    val_seeds = [int(s) for s in args.val_seeds.split(",") if s.strip()]
+    if val_seeds:
+        base_v = _score_params(seed_params, scenarios, val_seeds, args.url,
+                               args.team_name, args.parallel)
+        cand_v = _score_params(best, scenarios, val_seeds, args.url,
+                               args.team_name, args.parallel)
+        print(f"\nHeld-out {val_seeds}: baseline {base_v:,.0f} -> "
+              f"candidate {cand_v:,.0f}")
+        if cand_v <= base_v + 1.0:
+            print("REJECTED: TRAIN gain did NOT generalise to held-out "
+                  "seeds (overfit). jfam_params.json left unchanged.")
+            return
+        print("Held-out confirms generalisation.")
+
+    best_path.write_text(json.dumps(best, indent=2))
+    print(f"ADOPTED: TRAIN +{study.best_value - baseline_val:,.0f} "
+          f"-> wrote {best_path}")
+    print(json.dumps(study.best_params, indent=2))
 
 
 if __name__ == "__main__":

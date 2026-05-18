@@ -73,6 +73,13 @@ DEFAULT_PARAMS: dict = {
     # Nudge toward suppliers that deliver more often (shorter max gap), so a
     # critical ingredient isn't stranded over a no-delivery weekend.
     "cadence_cost": 0.4,
+    # Yield management: when demand exceeds capacity (customers walking due to
+    # full tables, not price), raise price toward the legal ceiling — more
+    # revenue per cover with ~no extra lost customers. Signal-driven, so it
+    # generalises to ANY capacity/surge regime (renovation, tourist, unseen).
+    "yield_price_mult": 1.18,
+    "yield_util_threshold": 0.90,   # table_utilization_peak
+    "price_hysteresis": 0.02,       # don't re-price for tiny mult changes
     # Regime adjustments.
     "regime_surge_staff_bonus": 3,
     "regime_quiet_staff_penalty": 2,
@@ -366,6 +373,16 @@ def core_strategy(obs: dict, day: int, state: dict,
     panic = cash < p["panic_reserve_days"] * overhead
     low_rep = rep in ("Poor", "Fair")
 
+    # Demand-pressure signal: are we turning customers away on capacity?
+    # (walkouts present OR tables near-saturated yesterday). Pure observable
+    # signal — no scenario-name sniffing, so it generalises to unseen cases.
+    ss = obs.get("service_summary") or {}
+    util_peak = ss.get("table_utilization_peak", 0.0) or 0.0
+    walk_band = ss.get("walkout_band", "None")
+    demand_pressure = (walk_band in ("Some", "Many")
+                       or util_peak >= p["yield_util_threshold"])
+    recovering = (regime in ("reputation_shock", "soft_demand") or low_rep)
+
     # ---- Staffing -------------------------------------------------------- #
     staff = p["staff_base"]
     if dow in ("Friday", "Saturday", "Sunday"):
@@ -385,13 +402,20 @@ def core_strategy(obs: dict, day: int, state: dict,
         actions.append({"tool": "set_staff_level", "args": {"level": staff}})
         state["staff"] = staff
 
-    # ---- Pricing (day 1 + on regime change) ------------------------------ #
+    # ---- Pricing --------------------------------------------------------- #
     price_mult = p["price_mult"]
-    if regime == "premium":
-        price_mult = p["regime_premium_price_mult"]
-    elif regime in ("reputation_shock", "soft_demand") or low_rep:
+    if recovering:
         price_mult = p["regime_recovery_price_mult"]
-    if not state.get("priced") or state.get("price_mult_used") != price_mult:
+    elif regime == "premium":
+        price_mult = p["regime_premium_price_mult"]
+    # Yield management overrides upward when capacity-bound with healthy rep:
+    # demand already exceeds supply, so a higher price captures margin without
+    # losing net customers. Never when recovering reputation.
+    if demand_pressure and not recovering:
+        price_mult = max(price_mult, p["yield_price_mult"])
+    prev = state.get("price_mult_used")
+    changed = prev is None or abs(price_mult - prev) > p["price_hysteresis"]
+    if not state.get("priced") or changed:
         for d in obs.get("menu_book", []):
             if d.get("is_active"):
                 actions.append({"tool": "set_price", "args": {
@@ -411,14 +435,15 @@ def core_strategy(obs: dict, day: int, state: dict,
 
     if (not panic and dow in p["slow_days"]
             and state.get("hh_streak", 0) < p["happy_hour_max_consecutive"]
-            and regime != "demand_surge"):
+            and regime != "demand_surge" and not demand_pressure):
         actions.append({"tool": "run_happy_hour", "args": {}})
         state["hh_streak"] = state.get("hh_streak", 0) + 1
     else:
         state["hh_streak"] = 0
 
     mkt = 0.0
-    if not panic and not low_rep and regime != "reputation_shock":
+    if (not panic and not low_rep and regime != "reputation_shock"
+            and not demand_pressure):
         if p["marketing_on_weekend"] and dow in ("Friday", "Saturday"):
             mkt = p["marketing_amount"]
         if p["marketing_on_declining"] and trend == "Declining":
