@@ -419,6 +419,47 @@ python -m agents.jfam_scenariolab silent_drift --full   # one, day-by-day trajec
 Append findings here so future sessions don't repeat dead ends. Format:
 `[date] finding — evidence — decision`.
 
+### ✅✅✅ FINAL EVAL COMPLETE — 2026-05-18 ~15:16Z (read this FIRST) ✅✅✅
+
+**Org final-eval instructions:** team `<team>_final_submission`
+(=`JFAM_agents_final_submission`), seeds **[1234, 4321]**, all 10
+scenarios, max parallel 10. Leaderboard/dashboard reset; eval phase
+flipped live ~15:16Z (server gates hidden scenarios with HTTP 403
+`"not available during the development phase"` until then — 403 = phase
+gate, NOT a bug; 429 = rate limit).
+
+**RESULT — full 20-cell matrix banked, locked agent `ef857e1`
+(pure-rules, `JFAM_LLM_OFF=1`), 0 bankruptcies, 0 negative cells, 0
+rep/satisfaction penalties anywhere, 30/30 days every cell:**
+- Full 20-cell avg ≈ **45,901**. Known-half 48,149 ≈ hidden-half
+  **44,401** ⇒ generalises to the 6 unseen scenarios ≈ as well as to the
+  4 known ⇒ §12 LATE-PM worst-case OOD fears (price-elasticity breaking
+  the 1.20 hold) did NOT materialise; the EXP1b inelasticity prior held
+  on every hidden scenario. Strongest empirical anti-overfit proof — the
+  Stage-2 robustness story.
+- Per-scenario avg (s1234/s4321): baseline 49,599 (54,168/45,030) ·
+  renovation 25,321 (30,490/20,153, weakest but always strongly +) ·
+  supply_crisis 53,092 · tourist_season 64,584 · black_swan 46,065 ·
+  feast_or_famine 42,173 (35,722 low leg) · health_scare 38,066 (weakest
+  hidden, 32,156 low leg, still +) · inflation 41,597 · premium_pivot
+  52,476 · silent_drift 46,030.
+- Worst cell renovation/4321 20,153; best tourist_season/4321 65,400.
+
+**OPERATIONAL LESSON:** `--parallel 10` (org-stated max) overshot the
+real server cap on a freshly-reset, everyone-hammering server — exactly 5
+ran concurrently, the rest 429'd. **`--parallel 3` produced ZERO
+rate-limit errors** for all subsequent runs. Use parallel 3 for any eval
+re-run. No poison from 429/403: a rejected `POST /games` creates no game,
+so an errored cell is *missing*, not −100000 on the server (only the
+local evaluate report shows −100000).
+
+**REMAINING (user actions, NOT code):** (1) matrix DONE ✅ — do not
+re-run (complete; re-running only burns the 60/hr cap). (2) Make repo
+`Fan-shiyu/Prosus-Hackathon` PUBLIC. (3) Fill submission form incl. "what
+we'd build next". (4) Last commit < deadline; branch `Jasper` pushed.
+**Do NOT patch code post-eval** — matrix is banked & locked-agent
+discipline holds.
+
 ### ★★★ NEXT-SESSION HANDOFF (read this FIRST) — 2026-05-18 ~16:00 ★★★
 
 **State:** agent LOCKED at git `08dfba3` on branch `Jasper` (pushed to
@@ -492,6 +533,22 @@ game on it). 5 worst top-clutter throwaways sunk to −100000 (#165+). Do
 NOT spawn new throwaway team names; reuse ONE dev name for any tests.
 
 **SEED-ROBUSTNESS CONFIRMED (org Discord: "eval is on RANDOM seeds").**
+
+**★★★ FINAL RESULT (2026-05-18 ~17:26) — organizer-run random-seed eval ★★★**
+Leaderboard reset to *_final_submission; organizers ran every agent on
+2 RANDOM seeds {1234,4321} x 10 scen = 20 cells. JFAM_agents_final_submission
+= **RANK #2, avg 45,900, 20/20 complete, 0 bankruptcies, all days=30**,
+worst cell 20,153 (renovation/4321). Only Estain ahead (47,190);
+Prosugo26 #3 42,670; AKT 34,934; la-forchetta 18,061. (MargheritAI
+53,541 but 19/20 incomplete.) Per-scenario all strong; premium_pivot
+~52k & silent_drift ~46k (EXP5b soft_demand-hold targets) among our BEST.
+Independent dev-run on seeds 7/55/99 corroborated (0 bankruptcies, same
+pattern) ⇒ genuinely robust, not seed-lucky. The generalization-first /
+anti-overfit discipline (rejected blanket-EXP4 & per-cell tuning) is why
+we're top-tier on unseen seeds+scenarios while high-variance rivals
+cratered (AKT worst 6k, la-forchetta -335). PITCH HEADLINE: offline
+analyst-loop built a +24% agent that generalised to 6 unseen scenarios
+& random seeds with zero bankruptcies, #2 of all final submissions.
 
 **COMPETITIVE GAP ANALYSIS + HOLD DECISION (2026-05-18 ~16:30, user: HOLD).**
 Per-scenario vs the genuine 12-cell leaders (seeds 7/55/99): the gap is
