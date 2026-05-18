@@ -26,6 +26,7 @@ import openai
 MODEL = os.getenv("AGENT_MODEL", "openai/gpt-4.1-mini")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "secret");
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "http://litellm-production.eba-pvykax23.eu-west-1.elasticbeanstalk.com/")
+TEAM_NAME= os.getenv("TEAM_NAME", "JFAM-TEAM");
 
 client = openai.OpenAI(
     api_key=OPENAI_API_KEY,
@@ -92,4 +93,4 @@ if __name__ == "__main__":
         print(f"Using model: {MODEL} (override with AGENT_MODEL env var)")
         sys.exit(1)
     print(f"Using model: {MODEL}")
-    result = run_game(strategy, team_name="llm_template", seed=42)
+    result = run_game(strategy, team_name=TEAM_NAME, seed=42)

@@ -1,0 +1,78 @@
+# RestBench Ultimate Agent Configuration
+# Tunable parameters for the agent
+
+# Forecast module
+forecast:
+  base_demand: 100  # Base demand estimate
+  historical_weight: 0.7  # Weight for historical data vs current signals
+  max_forecast_days: 4  # Days to forecast ahead
+  min_confidence_threshold: 0.5  # Minimum confidence for high prediction
+
+# Inventory module
+inventory:
+  safety_stock_buffer: 0.25  # 25% safety buffer
+  reorder_point_multiplier: 1.25  # Reorder when stock < consumption * this
+  min_stock_days: 2  # Minimum days of stock to maintain
+  max_order_ratio: 0.7  # Max % of cash to spend on one order
+  stockout_buffer: 0.5  # 50% buffer when ingredient caused stockout
+  supplier_diversification: 2  # Use top N reliable suppliers
+  expiry_warning_days: 2  # Warn when batches expire within N days
+
+# Satisfaction module
+satisfaction:
+  min_staff: 5  # Never go below this staff level
+  max_staff: 15  # Never exceed this staff level
+  weekend_staff_boost: 10  # Minimum staff on weekends
+  walkout_response_staff_add: 2  # Add this many staff when walkouts occur
+  max_marketing_spend: 500  # Max daily marketing budget
+  daily_special_rotate: true  # Rotate daily special through menu
+  reputation_protection_threshold: 3.5  # Avg stars below which to take action
+
+# Helper (Pricing) module
+pricing:
+  popularity_high_threshold: 15  # Dishes sold > this = popular
+  popularity_low_threshold: 5  # Dishes sold < this = unpopular
+  popularity_very_low_threshold: 3  # Very unpopular threshold
+  max_price_multiplier: 1.2  # Max price relative to base
+  min_price_multiplier: 0.8  # Min price relative to base
+  weather_discount: 0.95  # Discount on rainy/stormy days
+  trend_declining_discount: 0.90  # Discount when trend is declining
+  trend_growing_premium: 1.05  # Premium when trend is growing
+  slow_day_marketing_boost: 1.5  # Marketing boost on slow days
+  bad_reputation_marketing_boost: 1.5  # Marketing boost when reputation is low
+
+# Staff module
+staff:
+  default_staff: 8  # Starting/default staff level
+  staff_cost: 120  # EUR per staff per day
+  min_staff: 5  # Absolute minimum
+  max_staff: 15  # Absolute maximum
+  weekend_min: 10  # Minimum on weekends
+
+# Financial
+finance:
+  cash_reserve: 2000  # Minimum cash reserve in EUR
+  overhead_per_day: 1260  # Default overhead at 8 staff (300 + 8*120)
+  max_spend_ratio: 0.7  # Max % of cash to spend on single action
+
+# Conflict resolution
+conflict_resolution:
+  place_order: "sum"  # sum quantities for same supplier/ingredient
+  set_staff_level: "max"  # take highest (most conservative)
+  set_price: "last"  # take last decision
+  set_marketing_spend: "max"  # take highest
+  set_menu: "last"  # take last
+  offer_daily_special: "last"  # take last
+  run_happy_hour: "first"  # take first (only need once)
+  save_notes: "concat"  # concatenate all notes
+
+# Logging
+logging:
+  level: "INFO"  # INFO or DEBUG
+  format: "%(asctime)s - %(levelname)s - %(message)s"
+
+# LLM Configuration (optional)
+llm:
+  enabled: false  # Set to true to use LLM for pricing
+  model: "openai/gpt-4.1-mini"
+  timeout: 10  # seconds
