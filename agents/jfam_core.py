@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 from pathlib import Path
 
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday",
@@ -41,7 +42,14 @@ def load_dotenv(path: str | None = None) -> None:
 
 DEFAULT_PARAMS: dict = {
     # Pricing: multiplier on base price (clipped to the legal 0.8–1.2 band).
-    "price_mult": 1.08,
+    # Sim demand is relatively price-inelastic and quality penalties have huge
+    # headroom (rep/sat ~0), so aggressive pricing dominates when demand is
+    # abundant. Verified: 1.20 >> 1.08 on baseline/supply/tourist (+5–7k/cell).
+    "price_mult": 1.20,
+    # ...EXCEPT under a capacity cut (renovation-like): tables are scarce so a
+    # flat-high price kills the already-limited covers — keep it moderate and
+    # let the targeted yield rule raise price only on capacity-bound days.
+    "capacity_cut_price_mult": 1.08,
     # Staffing.
     "staff_base": 7,
     "staff_weekend_bonus": 1,      # Fri/Sat/Sun
@@ -291,17 +299,42 @@ def update_consumption(state: dict, obs: dict, p: dict) -> dict[str, float]:
 # --------------------------------------------------------------------------- #
 
 
+_WORDNUM = {"a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4,
+            "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
+
+
+def _alert_window_days(text: str) -> int | None:
+    """Parse a duration like 'two weeks' / '10 days' from an alert."""
+    m = re.search(r"(\d+|a|an|one|two|three|four|five|six|seven|eight|nine|"
+                  r"ten)\s+(week|day)", text)
+    if not m:
+        return None
+    n = int(m.group(1)) if m.group(1).isdigit() else _WORDNUM.get(m.group(1), 1)
+    return n * 7 if m.group(2) == "week" else n
+
+
 def detect_regime(obs: dict, state: dict) -> str:
     alerts = " ".join(obs.get("alerts", []) or []).lower()
     trend = obs.get("customer_trend", "Stable")
     rep = obs.get("reputation_band", "Very Good")
+    day = obs.get("day", 1)
 
     def has(*words):
         return any(w in alerts for w in words)
 
-    if has("renovation", "closed", "table", "capacity") or "renov" in alerts:
-        regime = "capacity_cut"
-    elif has("supplier", "outage", "halted", "shortage", "supply"):
+    # Capacity cuts (renovation-like) are announced ONCE but last for weeks.
+    # Persist the regime for the announced window so pricing/staffing stay
+    # adjusted on the silent days in between. Generalises to any announced
+    # temporary capacity reduction (incl. hidden scenarios).
+    if (has("renovation", "tables unavailable", "dining room", "capacity")
+            or "renov" in alerts):
+        dur = _alert_window_days(alerts) or 14
+        state["cap_cut_until"] = max(state.get("cap_cut_until", 0), day + dur)
+    if day <= state.get("cap_cut_until", 0):
+        state["regime"] = "capacity_cut"
+        return "capacity_cut"
+
+    if has("supplier", "outage", "halted", "shortage", "supply"):
         regime = "supply_crisis"
     elif has("festival", "tourist", "surge", "boom", "demand spike", "influx"):
         regime = "demand_surge"
@@ -438,8 +471,12 @@ def core_strategy(obs: dict, day: int, state: dict,
     price_mult = p["price_mult"]
     if recovering:
         price_mult = p["regime_recovery_price_mult"]
+    elif regime == "capacity_cut":
+        # Scarce tables: don't choke demand with a flat-high price; the yield
+        # rule below still lifts price on genuinely capacity-bound days.
+        price_mult = p["capacity_cut_price_mult"]
     elif regime == "premium":
-        price_mult = p["regime_premium_price_mult"]
+        price_mult = max(price_mult, p["regime_premium_price_mult"])
     # Yield management overrides upward when capacity-bound with healthy rep:
     # demand already exceeds supply, so a higher price captures margin without
     # losing net customers. Never when recovering reputation.

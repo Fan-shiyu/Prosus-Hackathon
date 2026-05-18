@@ -439,7 +439,30 @@ autonomy story ("the system improves its own operating policy").
   ⇒ pure hidden-scenario hardening, zero regression risk. Can't test the
   hidden scenario directly but the failure mode is closed.
 
-### ⚖️ Ceiling assessment (2026-05-18 — read before more micro-tuning)
+### ✖️ "CEILING" CLAIM RETRACTED — big pricing headroom found (2026-05-18 ~11:30)
+The assessment below was WRONG. Rival MargheritAI (complete 12-cell
+submission, avg ~35.4k) and others score 46–49k on the *same deterministic*
+baseline:7 where we got 31.4k → proof of large recoverable headroom.
+Root cause (diagnosed via trace): we under-priced. `price/base` sat at
+1.08 with walkouts None & utilisation ~0 & rep/sat penalties 0 — the sim's
+demand is fairly price-INELASTIC and quality penalties have huge headroom.
+Fix (validated, generalisable, signal-driven):
+- `price_mult` 1.08 → **1.20** (legal ceiling) when demand is abundant.
+  Response is non-monotonic (1.12/1.16 worse than 1.08; 1.20 best) — must
+  test endpoints, not interpolate.
+- EXCEPT `capacity_cut` regime → keep 1.08 + let the yield rule raise
+  selectively (flat-high chokes scarce renovation covers).
+- **Persistent regime detection:** capacity alerts fire ONCE ("...two
+  weeks") but the effect lasts ~14d. Now parse the duration from the alert
+  and persist `cap_cut_until` in state. Generalises to any announced
+  temporary effect (incl. hidden scenarios) — one-shot-announcement is a
+  general trap; stateless per-day detection was the bug.
+Result (seed 7, all +): renovation 13,066→17,099, baseline 31,403→36,979,
+supply_crisis 31,610→38,925, tourist 38,519→44,320. Avg +20%. 0 bankrupt,
+rep pen 0. Lesson: "penalties≈0, demand-capped" does NOT imply ceiling —
+check what rivals score on identical deterministic cells before concluding.
+
+### ⚖️ (SUPERSEDED) Ceiling assessment — kept for the lesson
 Known scenarios are at/near practical ceiling: reputation penalty ~0,
 waste ~200, walkout <450, 30/30 days, all beat dev leader AKT. Covers are
 demand-capped (we serve ~all customers). Further squeezing of knowns =
