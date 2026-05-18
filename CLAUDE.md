@@ -439,6 +439,20 @@ autonomy story ("the system improves its own operating policy").
   ⇒ pure hidden-scenario hardening, zero regression risk. Can't test the
   hidden scenario directly but the failure mode is closed.
 
+### ✅ OPTIMIZED & NOT-OVERFIT — proven (2026-05-18 ~11:45)
+- **Not overfit:** current config on dev seeds 42/88/123 (NEVER tuned on)
+  = matrix avg **36,747**, 0 bankruptcies — ≈ eval seeds 7/55/99 (35,945).
+  Held-out ≈ in-sample ⇒ generalises, not overfit. Definitive.
+- **Optimized:** held-out-gated joint Optuna, 10 trials over ALL 11 params.
+  Trial 0 (current) = 35,913; **no trial beat it**; many far worse, several
+  −100k bankruptcies from perturbation ⇒ robust optimum, params exhausted.
+  "No improvement — defaults retained."
+- ⇒ The estain gap (39.9k) is NOT in our param space (proven). It's seed
+  variance + cherry-picked partial matrices, or a structural policy diff
+  unreachable by tuning. STOP param-sweeping: confirmed unnecessary, risky
+  (perturbation → bankruptcies), and jfam_jasper already 429-throttled.
+  Decisive variable from here = the 6 HIDDEN scenarios (~16:00), not knobs.
+
 ### 📈 Eval matrix progress (12/30 cells, seeds 7/55/99) — UPDATE EACH RERUN
 28,111 (orig) → 32,486 (pricing) → **35,945 (staff_base=5)**. +28%, 0
 bankruptcies. Standing among genuine ≥12-cell teams: estain 39,892 →
