@@ -50,8 +50,10 @@ DEFAULT_PARAMS: dict = {
     # flat-high price kills the already-limited covers — keep it moderate and
     # let the targeted yield rule raise price only on capacity-bound days.
     "capacity_cut_price_mult": 1.08,
-    # Staffing.
-    "staff_base": 7,
+    # Staffing. We were overstaffed for normal demand (idle €120/day/head);
+    # base 5 is the validated sweet spot — surge/weekend bonuses still lift it
+    # on high-demand days so walkouts stay ~0. (Non-monotonic: 4 understaffs.)
+    "staff_base": 5,
     "staff_weekend_bonus": 1,      # Fri/Sat/Sun
     "staff_min": 4,
     "staff_max": 13,
