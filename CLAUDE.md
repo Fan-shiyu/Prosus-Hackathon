@@ -492,6 +492,25 @@ game on it). 5 worst top-clutter throwaways sunk to −100000 (#165+). Do
 NOT spawn new throwaway team names; reuse ONE dev name for any tests.
 
 **SEED-ROBUSTNESS CONFIRMED (org Discord: "eval is on RANDOM seeds").**
+
+**COMPETITIVE GAP ANALYSIS + HOLD DECISION (2026-05-18 ~16:30, user: HOLD).**
+Per-scenario vs the genuine 12-cell leaders (seeds 7/55/99): the gap is
+BASELINE (AgentC2 +13.8k, a_bunch_of_idiots +12.1k, smart_rule_v2 +9.0k)
+and SUPPLY_CRISIS (+5.6–10.3k) — NOT renovation (field ~23–27k there too;
+we're competitive, renovation is intrinsically hard, do NOT chase it).
+Our own rejected jfam_lab4 (blanket marketing) already shows +4.4k
+baseline/+4.4k supply on THESE seeds but craters seed-88 (overflow) —
+the leaders' +13k likely = a reputation/customer-cohort GROWTH flywheel
+we never cracked (our customer_trend stays "Stable" = harvest mode) OR
+demand-gen we deemed too seed-fragile. Leaders carry huge variance
+(smart_rule_v2 best 82k/worst 18k) ⇒ likely partly seed/scenario
+overfit that the announced RANDOM-seed final eval will punish, whereas
+ours is tight + 0 bankruptcies/18 seeds. DECISION (user): HOLD locked
+08dfba3 — robustness is the edge for random-seed scoring; safe
+generalizing levers are exhausted; chasing baseline peak now (untestable
+hidden, ~30min, must generalize) would risk the very robustness the eval
+rewards. Future session WITH a real reputation-growth idea could revisit
+baseline — but only signal-driven + multi-seed-no-regression gated.
 Locked agent on 4 FRESH random seeds {13,314,777,2024} × 4 known
 scenarios = 16/16 completed, **0 bankruptcies, 0 negative cells, avg
 50,685** (≥ the 45,191 6-seed validation). Cumulative proof: **18 distinct seeds (val 7/55/99/42/88/123 +
