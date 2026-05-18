@@ -389,3 +389,68 @@ RESTBENCH_URL=… python -m agents.evaluate agents.jfam_agent --seeds 7,55,99 --
 ```
 
 **Plan file:** `/Users/jasp/.claude/plans/i-want-you-to-hashed-meadow.md`.
+
+---
+
+## 12. Experiment Log — UPDATE EVERY SESSION
+
+Append findings here so future sessions don't repeat dead ends. Format:
+`[date] finding — evidence — decision`.
+
+### What works ✅
+- **Forward demand forecasting** (day-of-week cover profile drives front-loaded
+  ordering) — turned −15.8k → +31.5k on baseline/42; eliminated the recurring
+  Sunday 0-cover stockouts. This is the single biggest win. Keep.
+- **Pure-rules core, untuned:** baseline ~29.6k avg, tourist_season +46.6k,
+  supply_crisis +36k, renovation +8.3k, 0 bankruptcies across 4 known
+  scenarios. At/above dev leader AKT (~28.4k avg).
+- **Determinism confirmed:** identical (scenario,seed,actions) ⇒ identical
+  score (jfam_jasper baseline/42 == JFAM_agents baseline/42 == 31,491.72).
+  ⇒ the free zero-token tuning loop is reliable.
+
+### What does NOT work ❌ (do not retry without a new idea)
+- **L3 LLM layer (`gpt-4.1-mini`, bounded knob nudges, weekly cadence)** —
+  baseline/42 30,847 vs pure-rules 31,492 (−2%); renovation/42 **3,871 vs
+  8,301 (−53%)**. Cost is trivial (~$0.001/game, 5 calls) — the problem is
+  QUALITY: the LLM's price/staff/marketing nudges degrade an already
+  well-tuned rules core. **Decision: L3 OFF by default (`JFAM_LLM_OFF=1`).**
+  Integration itself is verified working (proxy + key OK, no errors).
+  Revisit only with a materially different idea, e.g.: (a) much stronger
+  model (gpt-5 / o-series) — untested; (b) L3 only in genuine emergencies
+  (panic cash / reputation spiral / unrecognised regime), never steady-state
+  re-pricing; (c) LLM proposes the *rule PARAMS* offline (advisory to
+  jfam_tune), not live per-day actions. Keep code as documented fallback /
+  pitch material, disabled.
+
+### Tuning attempt 1 — small Optuna underperforms reasoned defaults ⚠️
+- [2026-05-18] `jfam_tune` 6 trials on baseline+renovation@42: best mean
+  **19,209 < defaults' 19,896** (baseline/42 31,492 + reno/42 8,301)/2. 6
+  random samples over 11 dims is far too few; the hand-reasoned defaults
+  (from the forecast-fix work) are already a strong local optimum.
+- **Footgun found & fixed:** old tuner *always* overwrote
+  `jfam_params.json` even with a regression. Fixed: it now (a) enqueues
+  current params as trial 0 and (b) only writes the file if the best
+  **beats** that baseline. Regressing `jfam_params.json` was deleted —
+  agent runs on proven `DEFAULT_PARAMS`.
+- **Lesson:** real tuning needs ≥30–50 trials with full hackathon quota,
+  ideally tighter search ranges *around* the defaults (not the wide ranges)
+  and multi-seed objective to avoid overfitting. Defaults are the baseline
+  to beat; don't ship a tune that doesn't.
+
+### How AKT (rival) gets high scores — analysis
+- AKT global best 58,807 is `tourist_season` **seed 314** — NOT a dev (42/88/
+  123) or eval (7/55/99) seed. That's high-variance seed-fishing on the
+  *best-single-game* board; it will NOT count in the final fixed 30-cell
+  matrix average. Don't chase it.
+- AKT's *consistent* edge is on **baseline (~39k vs our ~30k)**; we already
+  beat them on supply_crisis (+36k vs 28k) and renovation (+8.3k vs −0.3k),
+  and match on tourist_season (~46k). The real gap to close = baseline,
+  via free `jfam_tune` of price_mult / staffing / marketing / inventory
+  buffers. Tuning the rules core (zero-token) is the path to AKT-level, NOT
+  the LLM.
+
+### TODO / next levers (highest ROI first)
+1. `jfam_tune` the baseline gap (free, zero-token). Avoid overfitting one
+   seed — validate winners on 42/88/123 before committing jfam_params.json.
+2. Re-validate full 4-scenario robustness after any param change.
+3. Lock params before ~16:00 eval; run 30-cell matrix on seeds 7/55/99.

@@ -95,21 +95,40 @@ def main():
     best_path = PARAMS_FILE
     base_best = json.loads(best_path.read_text()) if best_path.exists() else {}
 
+    # Keys the search space samples — used to seed the known-good baseline.
+    search_keys = ["price_mult", "staff_base", "staff_weekend_bonus",
+                   "safety_days", "coverage_buffer_days", "max_hold_days",
+                   "forecast_safety", "reserve_days", "cadence_cost",
+                   "marketing_amount", "reliability_floor"]
+
     def objective(trial):
         params = _suggest(trial)
         return _score_params(params, scenarios, seeds, args.url,
                              args.team_name, args.parallel)
 
     study = optuna.create_study(direction="maximize", study_name=args.study)
-    study.optimize(objective, n_trials=args.trials, n_jobs=1)
+    # Trial 0 = current defaults (or existing jfam_params.json) so the search
+    # can never end up worse than the known-good baseline.
+    seed_params = dict(DEFAULT_PARAMS)
+    seed_params.update(base_best)
+    study.enqueue_trial({k: seed_params[k] for k in search_keys})
+    study.optimize(objective, n_trials=args.trials + 1, n_jobs=1)
 
-    best = dict(DEFAULT_PARAMS)
-    best.update(base_best)
-    best.update(study.best_params)
-    best_path.write_text(json.dumps(best, indent=2))
-    print(f"\nBest mean score: {study.best_value:,.0f}")
-    print(f"Best params -> {best_path}")
-    print(json.dumps(study.best_params, indent=2))
+    baseline_val = study.trials[0].value  # the seeded defaults' score
+    print(f"\nBaseline (current params) mean: {baseline_val:,.0f}")
+    print(f"Best found mean:               {study.best_value:,.0f}")
+
+    if study.best_value > baseline_val + 1.0:
+        best = dict(DEFAULT_PARAMS)
+        best.update(base_best)
+        best.update(study.best_params)
+        best_path.write_text(json.dumps(best, indent=2))
+        print(f"IMPROVED by {study.best_value - baseline_val:,.0f} "
+              f"-> wrote {best_path}")
+        print(json.dumps(study.best_params, indent=2))
+    else:
+        print("No improvement over current params — jfam_params.json "
+              "left unchanged (defaults retained).")
 
 
 if __name__ == "__main__":

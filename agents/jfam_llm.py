@@ -39,11 +39,21 @@ a surge. Be conservative; the rules are already good."""
 
 def _client():
     from openai import OpenAI
-    base = os.getenv("LITELLM_BASE_URL")
-    key = os.getenv("LITELLM_API_KEY")
-    if not base or not key:
-        raise RuntimeError("LITELLM_BASE_URL / LITELLM_API_KEY not set")
+    # Defaults to OpenAI directly; set LITELLM_BASE_URL for the hackathon proxy.
+    base = os.getenv("LITELLM_BASE_URL") or "https://api.openai.com/v1"
+    key = os.getenv("LITELLM_API_KEY") or os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise RuntimeError("LITELLM_API_KEY / OPENAI_API_KEY not set")
     return OpenAI(api_key=key, base_url=base, timeout=20.0)
+
+
+def _resolve_model() -> str:
+    """Proxy wants `openai/<model>`; api.openai.com wants the bare name."""
+    model = os.getenv("AGENT_MODEL", "openai/gpt-4.1-mini")
+    base = os.getenv("LITELLM_BASE_URL") or "https://api.openai.com/v1"
+    if "api.openai.com" in base and model.startswith("openai/"):
+        model = model.split("/", 1)[1]
+    return model
 
 
 def _should_fire(obs: dict, day: int, state: dict) -> bool:
@@ -154,7 +164,7 @@ def refine(obs: dict, day: int, actions: list[dict],
     if not _should_fire(obs, day, state):
         return actions, state
 
-    model = os.getenv("AGENT_MODEL", "openai/gpt-4.1-mini")
+    model = _resolve_model()
     try:
         client = _client()
         for attempt in range(2):
