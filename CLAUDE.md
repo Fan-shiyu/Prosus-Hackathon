@@ -437,7 +437,29 @@ capacity, see EXP4b); **EXP3** rotate daily special (3/4 cells byte-
 identical ⇒ special-choice has ~0 effect; ≤1% prior confirmed).
 LLM decision (user, this session): **ship rules-only**, live LLM stays OFF
 (measured −2%/−53%); the offline-analyst loop IS the AI/autonomy story.
-TODO next: lock holds; at 16:00 run official 30-cell under JFAM_agents.
+
+**EXP5b (08dfba3) — OOD hidden-scenario hardening, BYTE-IDENTICAL on the
+24 known cells (zero regression, gate-proven 45,191/0 bankrupt):** 4 expert
+subagents (quant/ML/OOD) converged on a generic adverse-drift net. Shipped
+two mechanism-justified, signal-driven, provably-dormant pieces: (1)
+**soft_demand price-hold** — the 0.95 recovery cut is the WRONG lever for
+exogenous demand softness on price-INELASTIC demand (famine leg /
+premium_pivot churn / late silent_drift); reserve 0.95 for genuine
+reputation rebuild only; dormant because the 4 knowns' customer_trend is
+ALWAYS "Stable" ⇒ soft_demand never fires. (2) **Cash-bleed safe-mode** —
+cash strictly declining ≥3d AND under the reserve floor ⇒ +reserve / hold
+ceiling / kill marketing; pure anti-bankruptcy net for a black_swan /
+inflation cliff; dormant because knowns grow cash monotonically. PROCESS
+LESSON: a fast/slow REVENUE-EWMA trigger was tried first and the live gate
+REJECTED it — it false-fired on the tourist_season post-festival lull (an
+EXPECTED decline) regressing all 6 tourist cells −4k. A pure revenue/covers
+signal cannot separate an expected demand lull from adverse drift; only an
+unambiguous solvency signal (cash-bleed) is safe. Offline harness
+agents/jfam_oodlab.py validates efficacy; the live byte-identical 24-game
+gate is authoritative. Because EXP5b == locked on knowns, the 12 official
+known cells already banked under JFAM_agents (44,810) stay valid.
+TODO next: lock holds at 08dfba3; at 16:00 run the 18 hidden cells
+(6 hidden × seeds 7,55,99) under JFAM_agents to complete the 30-cell matrix.
 
 ### ★ STRATEGIC PIVOT (2026-05-18) — where AI is actually useful here
 Research consensus (AIM-Bench, AgentBench, HeuriGym, TRAIL + our own A/B
