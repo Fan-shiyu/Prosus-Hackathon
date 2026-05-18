@@ -455,12 +455,31 @@ Stage-2 autonomy = 0). Not worth it. Detail: memory
 restbench-overfit-research. Overfit params kept OUT of the real agent
 (jfam_params.json deleted; agent stays on committed DEFAULT_PARAMS).
 
-### ✅ DEEP OUTPUT ANALYSIS — sim mechanics decoded (2026-05-18 ~12:35)
+### ⚠️ CORRECTION (2026-05-18 ~13:10) — earlier diagnostic had a DATA BUG
+The "NO capacity constraint EVER" claim below was WRONG: it read rich
+fields from `day_result` (which only has total_covers/total_revenue/
+walkout_band/dishes_sold/substitutions). The real fields
+(table_utilization_peak, peak_wait_minutes, kitchen_bottleneck_hours,
+dishes_unavailable_at, hourly_covers) live in `observation.service_summary`
+(the NEXT obs after end-turn). The agent reads these correctly; only the
+ad-hoc diagnostic was buggy. CORRECTED finding (tourist_season:7):
+surge days DO saturate — util=1.00, walkout "Many", peak_wait ~15-18min
+(kitchen NOT bottleneck). We run staff 5-6 there (regime mis-detects as
+"normal": tourist_season fires NO alert + trend not "Growing"). BUT the
+obvious fix is a dead end: demand-responsive/forecast staffing & surge-
+staff bonus tested rigorously → WORSE on every scenario incl. tourist
+(−3.9k). Staff does NOT affect table turnover in this sim (confirmed 3
+ways: static sweep, surge-bonus sweep, forecast controller). Surge
+walkouts = HARD physical ceiling (22 fixed tables, price maxed, staff-
+independent); the walkout *penalty* is tiny (~115) so it barely matters.
+Net: the corrected data does NOT reveal a recoverable lever — conclusion
+(at ceiling) stands, now on accurate data. Do NOT re-chase surge staffing.
+
+### ✅ DEEP OUTPUT ANALYSIS — sim mechanics decoded (2026-05-18 ~12:35) [see CORRECTION above]
 Instrumented tourist_season:7 (rich service fields). Findings:
-- **NO capacity/kitchen/inventory constraint EVER** — peak_wait=0,
-  table_utilization=0, kitchen_bottleneck=[], substitutions=0, nothing
-  unavailable, even on 310-cover surge days. Binding constraint = pure
-  DEMAND + revenue/cover. (So staffing/inventory perfection ≠ more score.)
+- ~~NO capacity/kitchen/inventory constraint EVER~~ [WRONG — data bug, see
+  correction above. Capacity DOES saturate on surges but is staff-/lever-
+  independent → still not a recoverable lever.]
 - **All 8 dishes ~87-96% gross margin** (ingredient cost €1-4 trivial).
   Revenue ≈ dish price × covers; costs negligible.
 - Menu-engineering test (drop cheap dishes): **profit/cover COLLAPSED
