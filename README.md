@@ -2,6 +2,10 @@
 
 **Placed 4th of 16 at the Prosus × AISO Spring Hackathon 2026.** An autonomous AI agent that runs a simulated 22-table Italian restaurant for 30 days. Final eval: 45,900 average across 20 random-seed games, 0 bankruptcies, worst game €20,153.
 
+<video src="docs/video/demo.mp4" controls muted playsinline width="100%" poster="docs/img/demo_end.png">
+  Your browser does not support inline video. <a href="docs/img/demo_end.png">See the static screenshot</a> instead.
+</video>
+
 ![Demo replay showing the final score on tourist_season seed 7](docs/img/demo_end.png)
 
 ## What it does

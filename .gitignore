@@ -32,3 +32,4 @@ demo/
 # Personal drafts not for the public repo
 LINKEDIN_POST.md
 *.mp4
+!docs/video/*.mp4
