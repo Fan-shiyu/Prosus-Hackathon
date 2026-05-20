@@ -21,3 +21,14 @@ stress_test.py
 test_hackathon_readiness.py
 test_isolation.py
 agents/smart_agent.py
+
+# Generated demo outputs (regenerate locally via `python -m agents.jfam_demo`)
+demo/
+
+# OS / editor / agent local config
+.DS_Store
+.claude/
+
+# Personal drafts not for the public repo
+LINKEDIN_POST.md
+*.mp4
